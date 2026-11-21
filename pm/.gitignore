@@ -1,0 +1,5 @@
+inc/db.config.php
+uploads/*
+!uploads/.htaccess
+backups/*
+!backups/.htaccess

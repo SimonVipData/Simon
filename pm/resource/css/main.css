@@ -1,0 +1,185 @@
+
+
+html,body {
+	font-size:100% ; 
+	width:100%; 
+	height:100%;
+	line-height:normal;   
+	word-wrap:break-word;
+	word-break:break-all; 
+	font-family: arial,宋体,sans-serif;
+}
+
+a {
+	text-decoration: none;
+}
+.div_titlebold{
+	margin-top:10px;
+	margin-bottom:10px;
+	font-size: 20px;
+	font-weight: bold;
+	text-align: center;
+}
+.div_sendUser{
+	float:right;
+	margin-right: 20px;
+	color: #666666
+}
+
+/* zTree拓展样式 */
+
+/*展开 合并 箭头作为图标*/
+.ztree li span.button.mypoint_ico_open{
+	margin-right:2px; 
+	background: url(../js/zTree/zTreeStyle/img/diy/blue_expanded.png) no-repeat scroll 0 0 transparent; 
+	vertical-align:top; 
+	*vertical-align:middle
+}
+.ztree li span.button.mypoint_ico_close{
+	margin-right:2px; 
+	background: url(../js/zTree/zTreeStyle/img/diy/blue_right.png) no-repeat scroll 0 0 transparent; 
+	vertical-align:top; 
+	*vertical-align:middle
+}
+/*展开 合并 作为图标*/
+.ztree li span.button.folder_ico_open{
+	margin-right:2px;  
+	background:url(../js/zTree/zTreeStyle/img/zTreeStandard.png) no-repeat scroll -110px -16px transparent; 
+	*background:url(../js/zTree/zTreeStyle/img/zTreeStandard.gif) no-repeat scroll -110px -16px transparent; 
+	*vertical-align:middle;
+	background-position:;
+}
+.ztree li span.button.folder_ico_close{
+	margin-right:2px; 
+	background:url(../js/zTree/zTreeStyle/img/zTreeStandard.png) no-repeat scroll -110px 0 transparent; 
+	*background:url(../js/zTree/zTreeStyle/img/zTreeStandard.gif) no-repeat scroll -110px 0 transparent; 
+	vertical-align:top; 
+	*vertical-align:middle;
+}
+.ztree li span.button.folder_ico_docu{
+	margin-right:2px; 
+	background:url(../js/zTree/zTreeStyle/img/zTreeStandard.png) no-repeat scroll -110px -16px transparent; 
+	*background:url(../js/zTree/zTreeStyle/img/zTreeStandard.gif) no-repeat scroll -110px -16px transparent; 
+	vertical-align:top; 
+	*vertical-align:middle;
+}
+
+
+div.editor{
+	border: none;
+}
+
+/* 流程表单样式   */
+table.flowtable{
+	width: 600px;
+	border-collapse:collapse;
+	margin: 10px auto 10px;
+	border: 1px solid black;
+	height: auto;
+}
+table.flowtable caption{
+	font-size: 20px;
+	font-weight: bold;
+	padding: 10px;
+}
+table.flowtable th{
+	border: 1px solid black;
+	padding: 10px;
+	font-weight: bold;
+	text-align:center;
+}
+table.flowtable td{
+	border: 1px solid black;
+	padding: 10px;
+}
+
+table.flowtable textarea{
+	width: 90%;
+	height: 30px;
+}
+table.flowtable input{
+	width: 90%;
+}
+
+
+.btnDel{
+	background:url(../images/small/Delete_16x16.png) no-repeat; 
+	display:block; 
+	width:22px;
+	height:20px; 
+	margin-top: 1px;
+	margin-left: 2px;
+	
+}
+.btnDelete{
+	background:url(../images/small/Delete_16x16.png) no-repeat; 
+	display:inline-block;
+	width:22px;
+	height:20px; 
+	margin-top: 1px;
+	margin-left: 2px;
+	
+}
+
+.ul-menu{
+	margin: 1px 0 0;
+	padding:0;
+	list-style: none outside none;
+}
+
+li .ul-submenu{
+	display:none;
+	margin: 0 0 0 20px;
+	padding:0;
+	list-style: none outside none;
+	
+}
+
+.ul-menu>li>a , .ul-submenu>li>a{
+    border: 1px solid #95B8E7;
+    display: block;
+    margin: 0 0 -1px;
+    padding: 5px 10px;
+    background-color:#f9f9f9;
+    color: black;
+    text-decoration: none;
+	cursor: pointer;
+	
+}
+
+i.f-right{
+	float: right;
+    margin-right: -6px;
+    margin-top: 2px;
+    opacity: 0.25;
+}
+
+
+
+
+
+
+/* ===== 澳門工程管理網站 ===== */
+.pm-form table td{padding:5px 4px;vertical-align:top;font-size:13px;}
+.pm-form-label{width:110px;text-align:right;color:#555;line-height:28px;white-space:nowrap;}
+.pm-form-field input[type=text],.pm-form-field input[type=password],.pm-form-field input[type=number],.pm-form-field input[type=date],.pm-form-field select,.pm-form-field textarea{width:100%;max-width:380px;box-sizing:border-box;margin-bottom:0;font-size:13px;}
+.pm-form-field input[type=text],.pm-form-field input[type=password],.pm-form-field input[type=number],.pm-form-field input[type=date],.pm-form-field select{height:28px;line-height:20px;padding:3px 6px;}
+.pm-form-hint{color:#999;font-size:12px;line-height:18px;margin-top:2px;}
+.pm-form-static{line-height:28px;}
+.pm-steps{list-style:none;margin:0 0 6px 0;padding:0;max-width:380px;}
+.pm-steps li{border:1px solid #95B8E7;background:#F4F8FF;margin-bottom:4px;padding:3px 6px;line-height:24px;}
+.pm-steps li .pm-step-no{display:inline-block;min-width:92px;color:#1F5FA8;font-weight:bold;}
+.pm-steps li .pm-step-ops{float:right;}
+.pm-steps li .pm-step-ops a{margin-left:6px;cursor:pointer;}
+.pm-detail{width:100%;border-collapse:collapse;margin:0 0 12px 0;}
+.pm-detail th,.pm-detail td{border:1px solid #c9d9ee;padding:6px 8px;font-size:13px;line-height:20px;}
+.pm-detail th{background:#E0ECFF;width:110px;text-align:right;font-weight:normal;color:#333;white-space:nowrap;}
+.pm-detail thead th{text-align:center;width:auto;}
+.pm-flowline{margin:4px 0 12px 0;line-height:34px;}
+.pm-flowline span{display:inline-block;padding:0 10px;border:1px solid #ccc;border-radius:3px;background:#f5f5f5;color:#888;line-height:26px;}
+.pm-flowline span.s2,.pm-flowline span.s4{background:#e3f4e8;border-color:#7cc394;color:#2e8b57;}
+.pm-flowline span.s1{background:#fff3dc;border-color:#f0b24f;color:#c77700;font-weight:bold;}
+.pm-flowline span.s3{background:#fdecea;border-color:#e99;color:#d93025;}
+.pm-flowline i{font-style:normal;color:#999;margin:0 4px;}
+.pm-box{padding:10px;}
+.pm-box h4{font-size:14px;margin:0 0 8px 0;color:#1F5FA8;border-left:3px solid #1F5FA8;padding-left:8px;line-height:18px;}
