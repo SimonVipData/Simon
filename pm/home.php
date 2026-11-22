@@ -12,6 +12,9 @@ $todo = $admin ? array() : db_rows(
      FROM pm_docs d JOIN pm_doc_steps s ON s.doc_id = d.id AND s.round = d.round
      LEFT JOIN pm_users u ON u.id = d.creator_id
      WHERE d.status = ? AND s.status = ? AND s.role_id = ? ORDER BY d.id DESC LIMIT 10", array(DOC_PENDING, STEP_CURRENT, $user['role_id']));
+$notices = db_rows("SELECT n.id, n.title, n.created_at, COALESCE(NULLIF(u.real_name, ''), u.username) AS creator_name,
+                           (SELECT COUNT(*) FROM pm_notice_reads r WHERE r.notice_id = n.id AND r.user_id = ?) AS is_read
+                    FROM pm_notices n LEFT JOIN pm_users u ON u.id = n.user_id ORDER BY n.id DESC LIMIT 5", array($user['id']));
 $flows = db_rows('SELECT f.id, f.name, p.name AS project_name FROM pm_flows f LEFT JOIN pm_projects p ON p.id = f.project_id WHERE f.status = 1 ORDER BY f.id LIMIT 10');
 ?>
 <div style="padding:8px;overflow:auto;height:100%;box-sizing:border-box;">
@@ -23,6 +26,20 @@ $flows = db_rows('SELECT f.id, f.name, p.name AS project_name FROM pm_flows f LE
             <tr><td><?php echo h($project['code']); ?></td><td><?php echo h($project['name']); ?></td><td><?php echo h($project['location']); ?></td><td><?php echo h($project['owner_unit']); ?></td>
                 <td><?php echo h($project['contractor_unit']); ?></td><td><?php echo h($project['start_date']); ?></td><td><?php echo h($project['end_date']); ?></td><td><?php echo h($project['status']); ?></td></tr>
             <?php else: ?><tr><td colspan="8" style="text-align:center;color:#999;">暫無工程</td></tr><?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <div style="height:8px;"></div>
+    <div class="easyui-panel" title="系統消息" style="padding:6px;" data-options="collapsible:true">
+        <table class="table table-bordered table-condensed table-striped" style="margin:0;">
+            <thead><tr><th width="60">狀態</th><th>標題</th><th width="120">發布人</th><th width="160">發布時間</th></tr></thead>
+            <tbody>
+            <?php foreach ($notices as $n): ?>
+            <tr><td><?php echo (int)$n['is_read'] ? '已讀' : '<b style="color:#d93025">未讀</b>'; ?></td>
+                <td><a href="javascript:void(0)" onclick="MUI.openDialog('消息提醒','page.php?name=office_remind','dlg_office_remind',{width:1000,height:520})"><?php echo h($n['title']); ?></a></td>
+                <td><?php echo h($n['creator_name']); ?></td><td><?php echo h($n['created_at']); ?></td></tr>
+            <?php endforeach; ?>
+            <?php if (!$notices): ?><tr><td colspan="4" style="text-align:center;color:#999;">暫無系統消息</td></tr><?php endif; ?>
             </tbody>
         </table>
     </div>

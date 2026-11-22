@@ -4,40 +4,86 @@
  */
 function pm_menus() {
     $admin = is_admin();
-    $doc = array(array('title' => '工程信息', 'icon' => 'bricks.png', 'rel' => 'pm_project', 'page' => 'project'));
+    $item = function ($title, $icon, $page) {
+        return array('title' => $title, 'icon' => $icon, 'rel' => 'pm_' . $page, 'page' => $page);
+    };
+    $doc = array($item('工程信息', 'bricks.png', 'project'));
     if (!$admin) {
-        $doc[] = array('title' => '我的文件', 'icon' => 'Icon_2430308_s.gif', 'rel' => 'pm_doc_mine', 'page' => 'doc_mine');
-        $doc[] = array('title' => '待辦審批', 'icon' => '24102_s.gif', 'rel' => 'pm_doc_todo', 'page' => 'doc_todo');
-        $doc[] = array('title' => '已辦審批', 'icon' => '2430309_s.gif', 'rel' => 'pm_doc_done', 'page' => 'doc_done');
+        $doc[] = $item('我的文件', 'Icon_2430308_s.gif', 'doc_mine');
+        $doc[] = $item('待辦審批', '24102_s.gif', 'doc_todo');
+        $doc[] = $item('已辦審批', '2430309_s.gif', 'doc_done');
     }
-    $doc[] = array('title' => '全部文件', 'icon' => 'building_link.png', 'rel' => 'pm_doc_all', 'page' => 'doc_all');
+    $doc[] = $item('全部文件', 'building_link.png', 'doc_all');
 
-    $menus = array(array('id' => 'doc', 'title' => '工程文件', 'icon' => 'resource/images/menu/gzlc.png', 'children' => $doc));
+    $menus = array(
+        array('id' => 'doc', 'title' => '工程文件', 'icon' => 'resource/images/menu/gzlc.png', 'children' => $doc),
+        array('id' => 'office', 'title' => '個人辦公', 'icon' => 'resource/images/menu/xzbg.png', 'children' => array(
+            $item('消息提醒', 'msg.gif', 'office_remind'),
+            $item('即時溝通', 'reply.gif', 'office_chat'),
+            $item('內部郵件', 'mail_new.gif', 'office_mail'),
+            $item('投票', 'chart_line.png', 'office_vote'),
+        )),
+        array('id' => 'work', 'title' => '工程實務', 'icon' => 'resource/images/menu/ggpt.png', 'children' => array(
+            $item('記事本', 'mail_edit.png', 'note'),
+            $item('待辦事項', '24101_s.gif', 'todo'),
+            $item('工程日曆', '25008_s.gif', 'work_calendar'),
+            $item('客戶管理', 'gstxl.png', 'customer'),
+            $item('材料管理', 'bricks.png', 'material'),
+            $item('分包管理', 'building_edit.png', 'sub'),
+            $item('勞工管理', 'grtxl.png', 'labor'),
+        )),
+        array('id' => 'appr', 'title' => '內部審批', 'icon' => 'resource/images/menu/wdgl.gif', 'children' => array(
+            $item('詢價審批', '24001_s.gif', 'appr_inquiry'),
+            $item('費用審批', '24002_s.gif', 'appr_expense'),
+            $item('事項審批', '24301_s.gif', 'appr_matter'),
+        )),
+        array('id' => 'forum', 'title' => '工程論壇', 'icon' => 'resource/images/menu/xtgg.png', 'children' => array(
+            $item('工程論壇', 'xtgg.png', 'forum'),
+        )),
+    );
     if ($admin) {
-        $menus[] = array('id' => 'sys', 'title' => '系統管理', 'icon' => 'resource/images/menu/yzsz.png', 'children' => array(
-            array('title' => '角色管理', 'icon' => 'gstxl.png', 'rel' => 'pm_sys_role', 'page' => 'sys_role'),
-            array('title' => '用戶管理', 'icon' => 'grtxl.png', 'rel' => 'pm_sys_user', 'page' => 'sys_user'),
-            array('title' => '文件審批設置', 'icon' => '24502_s.gif', 'rel' => 'pm_sys_flow', 'page' => 'sys_flow'),
-            array('title' => '數據庫管理', 'icon' => 'gear.png', 'rel' => 'pm_sys_db', 'page' => 'sys_db'),
-        ));
+        $sys = array(
+            $item('角色管理', 'gstxl.png', 'sys_role'),
+            $item('職位管理', '26.png', 'position'),
+            $item('用戶管理', 'grtxl.png', 'sys_user'),
+            $item('文件審批設置', '24502_s.gif', 'sys_flow'),
+            $item('積分管理', '30.png', 'sys_credit'),
+            $item('消息發布', 'msg.gif', 'notice'),
+            $item('論壇版塊', 'xtgg.png', 'forum_board'),
+        );
+        if (is_super()) $sys[] = $item('數據庫管理', 'gear.png', 'sys_db');
+        $menus[] = array('id' => 'sys', 'title' => '系統管理', 'icon' => 'resource/images/menu/yzsz.png', 'children' => $sys);
     }
     $menus[] = array('id' => 'me', 'title' => '個人中心', 'icon' => 'resource/images/menu/grtxl.png', 'children' => array(
-        array('title' => '個人信息', 'icon' => 'grtxl.png', 'rel' => 'pm_user_info', 'page' => 'user_info'),
-        array('title' => '修改密碼', 'icon' => '18.png', 'rel' => 'pm_user_pw', 'page' => 'user_pw'),
-        array('title' => '登錄日志', 'icon' => 'dlrz.png', 'rel' => 'pm_log_login', 'page' => 'log_login'),
+        $item('個人信息', 'grtxl.png', 'user_info'),
+        $item('修改密碼', '18.png', 'user_pw'),
+        $item('登錄日志', 'dlrz.png', 'log_login'),
     ));
     return $menus;
 }
 
-/** 頁面白名單：name => array(文件, 是否僅管理員) */
+/** 頁面白名單：name => array(文件, 權限(false 全員 / true 管理員 / 'super' 超級管理員)[, 通用模塊名]) */
 function pm_pages() {
-    return array(
+    $pages = array(
         'project' => array('project', false),
         'doc_mine' => array('doc_list', false), 'doc_todo' => array('doc_list', false),
         'doc_done' => array('doc_list', false), 'doc_all' => array('doc_list', false),
         'doc_view' => array('doc_view', false),
         'sys_role' => array('sys_role', true), 'sys_user' => array('sys_user', true),
-        'sys_flow' => array('sys_flow', true), 'sys_db' => array('sys_db', true),
+        'sys_flow' => array('sys_flow', true), 'sys_db' => array('sys_db', 'super'),
+        'sys_credit' => array('sys_credit', true),
         'user_info' => array('user_info', false), 'user_pw' => array('user_pw', false), 'log_login' => array('log_login', false),
+        'office_remind' => array('office_remind', false), 'office_chat' => array('office_chat', false),
+        'office_mail' => array('office_mail', false), 'mail_view' => array('mail_view', false),
+        'office_vote' => array('office_vote', false), 'vote_view' => array('vote_view', false),
+        'work_calendar' => array('work_calendar', false),
+        'appr_inquiry' => array('appr_list', false), 'appr_expense' => array('appr_list', false), 'appr_matter' => array('appr_list', false),
+        'appr_view' => array('appr_view', false),
+        'forum' => array('forum', false), 'forum_thread' => array('forum_thread', false),
     );
+    foreach (array('position' => true, 'notice' => true, 'forum_board' => true, 'note' => false, 'todo' => false, 'customer' => false,
+                 'customer_quote' => false, 'sub' => false, 'sub_quote' => false, 'material' => false, 'labor' => false) as $m => $adminOnly) {
+        $pages[$m] = array('crud', $adminOnly, $m);
+    }
+    return $pages;
 }

@@ -8,9 +8,11 @@ if (is_logged_in()) {
     exit;
 }
 
-$error = '';
+$error = isset($_SESSION['pm_flash']) ? (string)$_SESSION['pm_flash'] : '';
+unset($_SESSION['pm_flash']);
 $name = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $error = '';
     $name = param('name');
     $password = isset($_POST['password']) && is_string($_POST['password']) ? $_POST['password'] : '';
     $code = param('vercode');
@@ -22,12 +24,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($name === '' || $password === '') {
         $error = '請輸入帳號和密碼';
     } else {
-        $u = db_row('SELECT id, username, password, status FROM pm_users WHERE username = ?', array($name));
+        $u = db_row('SELECT u.id, u.username, u.password, u.status, u.credits, r.type AS role_type
+                     FROM pm_users u LEFT JOIN pm_roles r ON r.id = u.role_id WHERE u.username = ?', array($name));
         $pass = $u && password_verify($password, $u['password']);
         if ($pass && (int)$u['status'] !== 1) {
             $error = '該帳號已被停用';
         } elseif (!$pass) {
             $error = '帳號或密碼錯誤';
+        } elseif ($u['role_type'] === 'user' && (int)$u['credits'] <= 0) {
+            $error = '您的積分已用完，請聯繫管理員充值';
         }
         db_insert('pm_login_logs', array(
             'user_id' => $u ? $u['id'] : 0, 'username' => mb_substr($name, 0, 50), 'ip' => client_ip(),
@@ -38,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             session_regenerate_id(true);
             $_SESSION['pm_uid'] = (int)$u['id'];
             unset($_SESSION['pm_csrf']);
-            db_q('UPDATE pm_users SET last_login = ? WHERE id = ?', array(now(), $u['id']));
+            db_q('UPDATE pm_users SET last_login = ?, credit_at = ?, active_at = ? WHERE id = ?', array(now(), now(), now(), $u['id']));
             header('Location: main.php');
             exit;
         }
@@ -67,12 +72,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .login-btn{width:100%;height:42px;background:#3a6ea5;border:none;border-radius:4px;color:#fff;font-size:16px;cursor:pointer;margin-top:8px;}
         .login-btn:hover{background:#2b5f8f;}
         .login-error{background:#fdecea;color:#d93025;padding:8px 12px;border-radius:4px;font-size:13px;margin-bottom:16px;text-align:center;}
+        .login-lang{text-align:right;font-size:12px;margin:-24px -20px 10px 0;}
+        .login-lang a{color:#3a6ea5;text-decoration:none;cursor:pointer;}
         .login-footer{text-align:center;font-size:12px;color:#aaa;margin-top:20px;}
     </style>
 </head>
 <body>
 <div class="login-wrap">
     <div class="login-box">
+        <div class="login-lang"><a href="javascript:void(0)" onclick="PMLang.toggle()" id="pm_lang_btn">简体</a></div>
         <div class="login-title"><?php echo APP_NAME; ?></div>
         <div class="login-sub">工程文件協作與審批平臺</div>
         <?php if ($error !== ''): ?><div class="login-error"><?php echo h($error); ?></div><?php endif; ?>
@@ -97,5 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="login-footer"><?php echo APP_COPYRIGHT; ?></div>
     </div>
 </div>
+<script type="text/javascript" charset="utf-8" src="resource/js/pm.lang.js"></script>
 </body>
 </html>

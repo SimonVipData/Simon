@@ -33,3 +33,4 @@
 <script type="text/javascript" src="resource/js/ui/ui.msg.js"></script>
 <script type="text/javascript" src="resource/js/util.js"></script>
 <script type="text/javascript" src="resource/js/pm.js"></script>
+<script type="text/javascript" charset="utf-8" src="resource/js/pm.lang.js"></script>

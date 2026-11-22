@@ -1,6 +1,7 @@
 <?php
 /** 用戶管理 */
-$roles = db_rows('SELECT id, name, type FROM pm_roles ORDER BY sort, id');
+$roles = db_rows('SELECT id, name, type FROM pm_roles' . (is_super() ? '' : " WHERE type <> 'super'") . ' ORDER BY sort, id');
+$positions = db_rows('SELECT id, name FROM pm_positions ORDER BY sort, id');
 ?>
 <div id="<?php echo $uid; ?>_tb" class="search-div">
     <form onsubmit="return datagridSearch(this,'<?php echo $uid; ?>_dg');">
@@ -10,6 +11,12 @@ $roles = db_rows('SELECT id, name, type FROM pm_roles ORDER BY sort, id');
                 <select name="role_id" style="width:140px;">
                     <option value="">全部角色</option>
                     <?php foreach ($roles as $r): ?><option value="<?php echo (int)$r['id']; ?>"><?php echo h($r['name']); ?></option><?php endforeach; ?>
+                </select>
+            </span>
+            <span><label>職位：</label>
+                <select name="position_id" style="width:120px;">
+                    <option value="">全部職位</option>
+                    <?php foreach ($positions as $p): ?><option value="<?php echo (int)$p['id']; ?>"><?php echo h($p['name']); ?></option><?php endforeach; ?>
                 </select>
             </span>
         </div>
@@ -30,13 +37,18 @@ $(function(){
     var roles = <?php echo json_encode(array_map(function ($r) {
         return array('value' => (string)$r['id'], 'text' => $r['name'] . ($r['type'] === 'admin' ? '（管理員）' : ''));
     }, $roles), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+    var positions = [{value: '0', text: '（無）'}].concat(<?php echo js_json(array_map(function ($p) {
+        return array('value' => (string)$p['id'], 'text' => $p['name']);
+    }, $positions)); ?>);
     PM.grid(dg, {
         url: 'api/user.php?act=list',
         columns: [[
             {field: 'username', title: '帳號', width: 110, align: 'center'},
             {field: 'real_name', title: '姓名', width: 110, align: 'center'},
             {field: 'role_name', title: '角色', width: 110, align: 'center'},
-            {field: 'role_type', title: '類別', width: 80, align: 'center', formatter: function(v){ return v === 'admin' ? '<span style="color:#d93025">管理員</span>' : '普通用戶'; }},
+            {field: 'role_type', title: '類別', width: 80, align: 'center', formatter: function(v){ return v === 'super' ? '<span style="color:#d93025">超級管理員</span>' : (v === 'admin' ? '<span style="color:#d93025">管理員</span>' : '普通用戶'); }},
+            {field: 'position_name', title: '職位', width: 100, align: 'center'},
+            {field: 'credit_min', title: '積分(分鐘)', width: 80, align: 'center', formatter: function(v, row){ return row.role_type === 'user' ? PM.esc(v) : '不限'; }},
             {field: 'company', title: '單位', width: 160},
             {field: 'phone', title: '電話', width: 110, align: 'center'},
             {field: 'email', title: '郵箱', width: 160},
@@ -50,10 +62,11 @@ $(function(){
             title: row ? '修改用戶' : '新增用戶', width: 560, data: row || {status: 1},
             url: 'api/user.php?act=save', extra: {id: row ? row.id : 0},
             fields: [
-                {name: 'username', label: '帳號', required: true},
-                {name: 'password', label: '密碼', type: 'password', required: !row, hint: row ? '留空表示不修改密碼' : '至少 6 位'},
+                {name: 'username', label: '帳號', required: true, hint: row ? '可修改用戶的登錄帳號' : '新用戶初始積分 30 分鐘'},
+                {name: 'password', label: '密碼', type: 'password', required: !row, hint: row ? '留空表示不修改密碼；填寫即重設該用戶密碼' : '至少 6 位'},
                 {name: 'real_name', label: '姓名'},
                 {name: 'role_id', label: '角色', type: 'select', options: roles, required: true},
+                {name: 'position_id', label: '職位', type: 'select', options: positions},
                 {name: 'company', label: '單位'},
                 {name: 'phone', label: '電話'},
                 {name: 'email', label: '郵箱'},

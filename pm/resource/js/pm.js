@@ -6,6 +6,12 @@ var PM = {
     init: function (cfg) {
         PM.cfg = cfg;
         $.ajaxSetup({headers: {'X-CSRF-Token': cfg.csrf}});
+        // EasyUI 自帶簡體語言包：繁體模式下覆蓋常用文字
+        if (!window.PMLang || PMLang.lang !== 'sc') {
+            if ($.messager) { $.messager.defaults.ok = '確定'; $.messager.defaults.cancel = '取消'; }
+            if ($.fn.pagination) $.extend($.fn.pagination.defaults, {beforePageText: '第', afterPageText: '共{pages}頁', displayMsg: '顯示{from}到{to}，共{total}條記錄'});
+            if ($.fn.datagrid) $.fn.datagrid.defaults.loadMsg = '正在處理，請稍候...';
+        }
     },
     esc: function (s) {
         return s === null || s === undefined ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -39,7 +45,7 @@ var PM = {
         }).fail(function (xhr) {
             var res = xhr.responseJSON;
             if (xhr.status === 401) {
-                window.top.location.href = 'index.php';
+                PM.kick(res && res.msg);
             } else {
                 PM.alert(res && res.msg ? res.msg : '請求失敗（' + xhr.status + '）', 'error');
             }
@@ -71,11 +77,35 @@ var PM = {
         });
         PM.refreshTodo();
     },
-    refreshTodo: function () {
-        if (PM.cfg.admin) return;
-        $.getJSON('api/doc.php', {act: 'todo_count'}, function (res) {
-            if (res && res.ok) $('#ft_todo').text(res.count);
+    refreshTodo: function () { PM.ping(); },
+    /** 心跳：刷新未讀數與積分；普通用戶積分用完時強制退出 */
+    ping: function () {
+        $.ajax({url: 'api/me.php', data: {act: 'ping'}, dataType: 'json', global: false}).done(function (res) {
+            if (!res || !res.ok) return;
+            $('#ft_todo').text(res.doc + res.appr + res.notice);
+            $('#ft_mail').text(res.mail);
+            $('#ft_chat').text(res.chat);
+            PM.counts = res;
+            if (res.limited) PM.setCredits(res.credits);
+        }).fail(function (xhr) {
+            if (xhr.status === 401) PM.kick(xhr.responseJSON && xhr.responseJSON.msg);
         });
+    },
+    setCredits: function (sec) {
+        PM.creditEnd = new Date().getTime() + sec * 1000;
+        if (!PM.creditTimer) {
+            PM.creditTimer = setInterval(function () {
+                var left = Math.max(0, Math.round((PM.creditEnd - new Date().getTime()) / 1000));
+                $('#ft_credit').text(Math.ceil(left / 60));
+                if (left <= 0) { clearInterval(PM.creditTimer); PM.creditTimer = null; PM.ping(); }
+            }, 1000);
+        }
+    },
+    kick: function (msg) {
+        if (PM.kicked) return;
+        PM.kicked = true;
+        window.alert(window.PMLang ? PMLang.conv(msg || '登錄已超時，請重新登錄') : msg);
+        window.top.location.href = 'index.php';
     },
     /** 打開模態窗口（加載頁面），關閉即銷毀 */
     dialog: function (title, url, opt) {
@@ -114,6 +144,14 @@ var PM = {
             } else if (f.type === 'custom') {
                 $in = $('<div/>');
                 custom.push({f: f, $el: $in});
+            } else if (f.type === 'files') {
+                $in = $('<div/>');
+                $.each(f.files || [], function (j, x) {
+                    $('<div class="pm-file-row"/>').append($('<label style="display:inline;font-weight:normal;"/>')
+                        .append($('<input type="checkbox" class="pm-file-del" style="margin:0 4px 0 0;"/>').val(x.id)).append('刪除 '))
+                        .append($('<a/>').attr('href', 'api/file.php?id=' + x.id).text(x.name)).appendTo($in);
+                });
+                $('<input type="file" multiple="multiple"/>').attr('name', 'f_' + f.name + '[]').appendTo($in);
             } else if (f.type === 'static') {
                 $in = $('<span class="pm-form-static"/>').text(val);
             } else {
@@ -136,13 +174,15 @@ var PM = {
                     var v = f.getValue();
                     if (f.required && !v) err = err || ('請設置' + f.label);
                     fd.append(f.name, v);
-                } else if (f.required && f.type !== 'static') {
+                } else if (f.required && f.type !== 'static' && f.type !== 'files') {
                     var $f = $form.find('[name="' + f.name + '"]');
                     if ($.trim($f.val() || '') === '') err = err || ('請填寫' + f.label);
                 }
             });
             if (err) return PM.alert(err);
             $.each(opt.extra || {}, function (k, v) { fd.append(k, v); });
+            var del = $form.find('.pm-file-del:checked').map(function () { return this.value; }).get();
+            if (del.length) fd.append('del_files', del.join(','));
             if (opt.beforeSubmit && opt.beforeSubmit(fd, $form) === false) return;
             PM.post(opt.url, fd, function (res) {
                 $d.dialog('close');
@@ -166,6 +206,61 @@ var PM = {
         });
         return $d;
     },
+    optText: function (options, v) {
+        for (var i = 0; i < options.length; i++) if (String(options[i].value) === String(v)) return options[i].text;
+        return v === null || v === undefined ? '' : v;
+    },
+    /** 附件鏈接列表（datagrid formatter / 詳情） */
+    fileLinks: function (list) {
+        return $.map(list || [], function (x) {
+            return '<a href="api/file.php?id=' + x.id + '" title="' + PM.fileSize(x.size) + '">' + PM.esc(x.name) + '</a>';
+        }).join('<br/>');
+    },
+    /** 只讀詳情窗口：fields 同 PM.form */
+    detail: function (title, fields, row, opt) {
+        var html = '<div class="pm-box"><table class="pm-detail">';
+        $.each(fields, function (i, f) {
+            var v = row[f.name], out;
+            if (f.type === 'files') out = PM.fileLinks(f.files) || '無';
+            else if (f.html) out = f.html(row);
+            else out = PM.esc(f.options ? PM.optText(f.options, v) : v).replace(/\n/g, '<br/>');
+            html += '<tr><th>' + PM.esc(f.label) + '</th><td>' + out + '</td></tr>';
+        });
+        html += '</table></div>';
+        var $d = $('<div/>').html(html).appendTo('body');
+        $d.dialog($.extend({title: title, width: 680, height: 'auto', modal: true, resizable: true,
+            buttons: [{text: '關閉', iconCls: 'icon-cancel', handler: function () { $d.dialog('close'); }}],
+            onClose: function () { $d.dialog('destroy'); }}, opt || {}));
+        return $d;
+    },
+    /** 用戶多選（表單 custom 字段）：users=[{id,username,real_name,role_name}]，ordered 為 true 時按勾選先後排序 */
+    userPicker: function (users, selected, ordered) {
+        var picked = $.map(selected || [], function (x) { return String(x); }), $box, $order;
+        function name(u) { return (u.real_name || u.username) + '（' + (u.role_name || '') + '）'; }
+        function draw() {
+            if (!$order) return;
+            $order.text(picked.length ? '先後順序：' + $.map(picked, function (id) {
+                for (var i = 0; i < users.length; i++) if (String(users[i].id) === id) return users[i].real_name || users[i].username;
+            }).join(' → ') : '');
+        }
+        return {
+            render: function ($el) {
+                $box = $('<div class="pm-user-pick"/>').appendTo($el);
+                $.each(users, function (i, u) {
+                    var $c = $('<input type="checkbox" style="margin:0 4px 0 0;"/>').val(u.id).prop('checked', $.inArray(String(u.id), picked) >= 0);
+                    $c.change(function () {
+                        var id = String(u.id), k = $.inArray(id, picked);
+                        if (this.checked && k < 0) picked.push(id);
+                        if (!this.checked && k >= 0) picked.splice(k, 1);
+                        draw();
+                    });
+                    $('<label/>').append($c).append(document.createTextNode(name(u))).appendTo($box);
+                });
+                if (ordered) { $order = $('<div class="pm-form-hint" style="color:#1F5FA8;"/>').appendTo($el); draw(); }
+            },
+            getValue: function () { return picked.join(','); }
+        };
+    },
     docStatus: function (v, row) {
         var color = {0: '#888', 1: '#e68a00', 2: '#2e8b57', 3: '#d93025'}[v] || '#333';
         return '<span style="color:' + color + ';font-weight:bold;">' + PM.esc(row.status_text) + '</span>';
@@ -178,5 +273,8 @@ var PM = {
     },
     viewDoc: function (id) {
         PM.dialog('文件詳情', 'page.php?name=doc_view&id=' + encodeURIComponent(id), {width: 900, height: 600});
+    },
+    viewAppr: function (id) {
+        PM.dialog('審批詳情', 'page.php?name=appr_view&id=' + encodeURIComponent(id), {width: 900, height: 600});
     }
 };

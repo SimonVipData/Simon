@@ -31,7 +31,11 @@ if ($act === 'save') {
     if ($id) {
         $old = db_row('SELECT * FROM pm_roles WHERE id = ?', array($id));
         if (!$old) fail('角色不存在');
-        if ($id === (int)$me['role_id'] && $type !== 'admin') fail('不能將自己所屬角色改為普通用戶');
+        if ($old['type'] === 'super') {
+            if (!is_super()) fail('超級管理員角色只能由超級管理員修改');
+            $data['type'] = $type = 'super';
+        }
+        if ($id === (int)$me['role_id'] && $type === 'user') fail('不能將自己所屬角色改為普通用戶');
         if ($old['type'] !== $type && $type === 'admin' && db_val('SELECT id FROM pm_flow_steps WHERE role_id = ? LIMIT 1', array($id))) {
             fail('該角色已用於文件審批設置，不能改為管理員類別');
         }
@@ -47,6 +51,7 @@ if ($act === 'save') {
 if ($act === 'delete') {
     $id = param_int('id');
     if ($id === (int)$me['role_id']) fail('不能刪除自己所屬的角色');
+    if (db_val("SELECT id FROM pm_roles WHERE id = ? AND type = 'super'", array($id))) fail('超級管理員角色不能刪除');
     if (!db_val('SELECT id FROM pm_roles WHERE id = ?', array($id))) fail('角色不存在');
     if (db_val('SELECT id FROM pm_users WHERE role_id = ? LIMIT 1', array($id))) fail('該角色下仍有用戶，請先刪除或調整用戶');
     if (db_val('SELECT id FROM pm_flow_steps WHERE role_id = ? LIMIT 1', array($id))) fail('該角色已用於文件審批設置，請先調整審批順序');

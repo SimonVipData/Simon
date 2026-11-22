@@ -17,7 +17,7 @@ $(function(){
         url: 'api/role.php?act=list',
         columns: [[
             {field: 'name', title: '角色名稱', width: 160, align: 'center'},
-            {field: 'type', title: '角色類別', width: 110, align: 'center', formatter: function(v){ return v === 'admin' ? '<span style="color:#d93025">管理員</span>' : '普通用戶'; }},
+            {field: 'type', title: '角色類別', width: 110, align: 'center', formatter: function(v){ return v === 'super' ? '<span style="color:#d93025">超級管理員</span>' : (v === 'admin' ? '<span style="color:#d93025">管理員</span>' : '普通用戶'); }},
             {field: 'user_count', title: '用戶數', width: 70, align: 'center'},
             {field: 'sort', title: '排序', width: 60, align: 'center'},
             {field: 'remark', title: '備註', width: 320},
@@ -30,7 +30,8 @@ $(function(){
             url: 'api/role.php?act=save', extra: {id: row ? row.id : 0},
             fields: [
                 {name: 'name', label: '角色名稱', required: true},
-                {name: 'type', label: '角色類別', type: 'select', options: [{value: 'user', text: '普通用戶'}, {value: 'admin', text: '管理員'}]},
+                row && row.type === 'super' ? {name: 'type_text', label: '角色類別', type: 'static', value: '超級管理員'}
+                    : {name: 'type', label: '角色類別', type: 'select', options: [{value: 'user', text: '普通用戶'}, {value: 'admin', text: '管理員'}]},
                 {name: 'sort', label: '排序', type: 'number'},
                 {name: 'remark', label: '備註', type: 'textarea', rows: 3}
             ],

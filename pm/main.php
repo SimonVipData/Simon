@@ -12,6 +12,7 @@ $admin = is_admin();
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <?php include __DIR__ . '/inc/head.php'; ?>
     <style>
+        #div_top_2 a{text-decoration:none;}
         .pm-logo{float:left;margin-left:10px;font-size:22px;font-weight:bold;color:#1F5FA8;line-height:34px;letter-spacing:2px;text-shadow:1px 1px 0 #fff, 2px 2px 2px rgba(0,0,0,.25);white-space:nowrap;}
     </style>
 </head>
@@ -37,12 +38,22 @@ $admin = is_admin();
                 </div>
             </div>
             <div id="div_top_2">
-                <?php if (!$admin): ?>
                 <div>
-                    <a href="javascript:void(0)" onclick="MUI.openDialog('待辦審批','page.php?name=doc_todo&dlg=1','dlg_doc_todo',{width:1000,height:480})" title="待辦審批">
-                        <img src="resource/images/menu/flow.gif" alt="待辦審批" style="vertical-align:middle;"/>(<span style="color:red" id="ft_todo">0</span>)</a>
+                    <a href="javascript:void(0)" onclick="MUI.openDialog('消息提醒','page.php?name=office_remind','dlg_office_remind',{width:1000,height:520})" title="消息提醒（待審批文件、內部審批、系統消息）">
+                        <img src="resource/images/menu/flow.gif" alt="消息提醒" style="vertical-align:middle;"/>(<span style="color:red" id="ft_todo">0</span>)</a>
                 </div>
+                <div>
+                    <a href="javascript:void(0)" onclick="MUI.openDialog('內部郵件','page.php?name=office_mail','dlg_office_mail',{width:1000,height:520})" title="未讀郵件">
+                        <img src="resource/images/menu/mail_new.gif" alt="內部郵件" style="vertical-align:middle;"/>(<span style="color:red" id="ft_mail">0</span>)</a>
+                </div>
+                <div>
+                    <a href="javascript:void(0)" onclick="MUI.openDialog('即時溝通','page.php?name=office_chat','dlg_office_chat',{width:900,height:540})" title="未讀即時消息">
+                        <img src="resource/images/menu/reply.gif" alt="即時溝通" style="vertical-align:middle;"/>(<span style="color:red" id="ft_chat">0</span>)</a>
+                </div>
+                <?php if (!$admin): ?>
+                <div style="width:auto;padding:0 6px;" title="積分即可使用本系統的分鐘數，用完後將自動退出">積分：<b style="color:#d93025" id="ft_credit"><?php echo (int)ceil($user['credits'] / 60); ?></b> 分鐘</div>
                 <?php endif; ?>
+                <div style="width:auto;padding:0 6px;"><a href="javascript:void(0)" onclick="PMLang.toggle()" id="pm_lang_btn" title="切換繁體 / 簡體">简体</a></div>
                 <div style="width:200px;"><span id="clock"></span></div>
             </div>
         </div>
@@ -67,7 +78,8 @@ $admin = is_admin();
                                     帳號：<?php echo h($user['username']); ?><br/>
                                     姓名：<?php echo h($user['real_name']); ?><br/>
                                     角色：<?php echo h($user['role_name']); ?><br/>
-                                    類別：<?php echo $admin ? '管理員' : '普通用戶'; ?>
+                                    職位：<?php echo h($user['position_name']); ?><br/>
+                                    類別：<?php echo is_super() ? '超級管理員' : ($admin ? '管理員' : '普通用戶'); ?>
                                 </div>
                             </div>
                         </div>
@@ -118,7 +130,7 @@ $admin = is_admin();
             $('#clock').text(d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())+' 星期'+'日一二三四五六'.charAt(d.getDay()));
         }
         tick(); setInterval(tick, 1000);
-        PM.refreshTodo(); setInterval(PM.refreshTodo, 60000);
+        PM.ping(); setInterval(PM.ping, 30000);
     });
 </script>
 </body>

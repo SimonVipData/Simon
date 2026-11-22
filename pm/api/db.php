@@ -1,5 +1,5 @@
 <?php
-/** 數據庫管理 API（管理員）：備份、下載、刪除、恢復 */
+/** 數據庫管理 API（超級管理員）：備份、下載、刪除、恢復 */
 require_once __DIR__ . '/../inc/config.php';
 require_once __DIR__ . '/../inc/install.php';
 $act = param('act', 'list');
@@ -73,23 +73,64 @@ function backup_validate($path) {
         $n++;
     }
     fclose($fp);
-    if (array_diff($tables, $created)) throw new PmError('備份文件不完整（缺少數據表），已拒絕恢復');
+    // 舊版本備份可以只包含第一期的數據表，恢復後由 pm_migrate() 補齊
+    $core = array('pm_roles', 'pm_users', 'pm_projects', 'pm_flows', 'pm_flow_steps', 'pm_docs', 'pm_doc_steps', 'pm_login_logs');
+    if (array_diff($core, $created)) throw new PmError('備份文件不完整（缺少數據表），已拒絕恢復');
     return $n;
 }
 
+function backup_has_table($t) {
+    return (bool)db_val('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?', array($t));
+}
+
+function backup_norm($create) {
+    return preg_replace(array('/\s*[\r\n]+\s*/', '/ AUTO_INCREMENT=\d+/'), array(' ', ''), $create);
+}
+
+/**
+ * 恢復備份。結構與當前一致的表只做 DELETE + INSERT（單一事務、不做 DDL，
+ * 在磁盤較慢的服務器上也能很快完成）；結構不同的表才重建。
+ * 備份中沒有的表（舊版本備份）會被清空，之後由 pm_migrate() 補齊。
+ */
 function backup_exec($path) {
     $pdo = db();
     $fp = fopen($path, 'rb');
+    $inBackup = array();
+    $rebuilt = array();
     while (($line = fgets($fp)) !== false) {
-        $line = rtrim($line, "\r\n");
-        if ($line === '' || strpos($line, '-- ') === 0) continue;
-        $pdo->exec(substr($line, 0, -1));
+        if (!preg_match('/^CREATE TABLE `(pm_[a-z_]+)`/', $line, $m)) continue;
+        $t = $m[1];
+        $inBackup[$t] = true;
+        $sql = substr(rtrim($line, "\r\n"), 0, -1);
+        if (backup_has_table($t)) {
+            $cur = $pdo->query("SHOW CREATE TABLE `$t`")->fetch(PDO::FETCH_NUM);
+            if (backup_norm($cur[1]) === backup_norm($sql)) continue;
+        }
+        $pdo->exec("DROP TABLE IF EXISTS `$t`");
+        $pdo->exec($sql);
+        $rebuilt[$t] = true;
+    }
+    $pdo->beginTransaction();
+    try {
+        foreach (backup_tables() as $t) {
+            if (isset($rebuilt[$t])) continue;
+            if (isset($inBackup[$t]) || backup_has_table($t)) $pdo->exec("DELETE FROM `$t`");
+        }
+        rewind($fp);
+        while (($line = fgets($fp)) !== false) {
+            if (strpos($line, 'INSERT INTO `') === 0) $pdo->exec(substr(rtrim($line, "\r\n"), 0, -1));
+        }
+        $pdo->commit();
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        fclose($fp);
+        throw $e;
     }
     fclose($fp);
 }
 
 if ($act === 'list') {
-    api_guard(true, false);
+    api_guard('super', false);
     $rows = array();
     foreach ((array)glob(BACKUP_DIR . '/pm_backup_*.sql') as $f) {
         $name = basename($f);
@@ -105,7 +146,7 @@ if ($act === 'list') {
 }
 
 if ($act === 'download') {
-    api_guard(true, false);
+    api_guard('super', false);
     $path = backup_path(param('name'));
     if (!$path || !is_file($path)) {
         http_response_code(404);
@@ -119,7 +160,7 @@ if ($act === 'download') {
     exit;
 }
 
-api_guard(true);
+api_guard('super');
 @set_time_limit(300);
 
 try {
@@ -150,6 +191,7 @@ try {
         $safety = backup_create('恢復前自動備份');
         try {
             backup_exec($path);
+            pm_migrate();
         } catch (Exception $e) {
             // 恢復失敗：回滾到恢復前的自動備份
             backup_exec(BACKUP_DIR . '/' . $safety);

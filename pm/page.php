@@ -12,9 +12,10 @@ if (!isset($pages[$name])) {
     echo '<div style="padding:20px;">頁面不存在</div>';
     exit;
 }
-if ($pages[$name][1]) require_admin_page();
+if ($pages[$name][1]) require_admin_page($pages[$name][1] === 'super');
 $user = current_user();
 $admin = is_admin();
 // 同一頁面可能同時在多個標籤/窗口中打開，元素 ID 加上唯一前綴
 $uid = 'p' . bin2hex(random_bytes(4));
+$crudName = isset($pages[$name][2]) ? $pages[$name][2] : '';
 require __DIR__ . '/pages/' . $pages[$name][0] . '.php';

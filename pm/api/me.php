@@ -3,6 +3,22 @@
 require_once __DIR__ . '/../inc/config.php';
 $act = param('act');
 
+/** 各類待處理/未讀數量 */
+function pm_counts($me) {
+    $uid = (int)$me['id'];
+    $c = array(
+        'doc' => is_admin() ? 0 : (int)db_val('SELECT COUNT(*) FROM pm_docs d JOIN pm_doc_steps s ON s.doc_id = d.id AND s.round = d.round
+                                               WHERE d.status = ? AND s.status = ? AND s.role_id = ?', array(DOC_PENDING, STEP_CURRENT, $me['role_id'])),
+        'appr' => (int)db_val('SELECT COUNT(*) FROM pm_apprs a JOIN pm_appr_steps s ON s.appr_id = a.id WHERE a.status = ? AND s.status = ? AND s.user_id = ?', array(DOC_PENDING, STEP_CURRENT, $uid)),
+        'notice' => (int)db_val('SELECT COUNT(*) FROM pm_notices n WHERE NOT EXISTS (SELECT 1 FROM pm_notice_reads r WHERE r.notice_id = n.id AND r.user_id = ?)', array($uid)),
+        'mail' => (int)db_val('SELECT COUNT(*) FROM pm_mail_to t JOIN pm_mails m ON m.id = t.mail_id AND m.status = 1 WHERE t.user_id = ? AND t.deleted = 0 AND t.is_read = 0', array($uid)),
+        'chat' => (int)db_val('SELECT COUNT(*) FROM pm_chat_msgs WHERE to_id = ? AND is_read = 0', array($uid))
+                + (int)db_val('SELECT COUNT(*) FROM pm_chat_msgs WHERE to_id = 0 AND from_id <> ? AND id > COALESCE((SELECT last_id FROM pm_chat_reads WHERE user_id = ?), 0)', array($uid, $uid)),
+    );
+    $c['total'] = array_sum($c);
+    return $c;
+}
+
 if ($act === 'logs') {
     api_guard(false, false);
     $me = current_user();
@@ -13,6 +29,14 @@ if ($act === 'logs') {
         'total' => (int)db_val("SELECT COUNT(*) FROM pm_login_logs WHERE $w"),
         'rows' => db_rows("SELECT id, username, ip, user_agent, result, created_at FROM pm_login_logs WHERE $w ORDER BY id DESC LIMIT $limit OFFSET $offset"),
     ));
+}
+
+if ($act === 'ping') {
+    // 心跳：扣減積分（current_user 內完成）、更新在線時間、返回各類未讀數
+    api_guard(false, false);
+    $me = current_user();
+    db_q('UPDATE pm_users SET active_at = ? WHERE id = ?', array(now(), $me['id']));
+    json_out(array('ok' => true, 'limited' => $me['role_type'] === 'user', 'credits' => (int)$me['credits']) + pm_counts($me));
 }
 
 api_guard();
