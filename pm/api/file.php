@@ -19,6 +19,9 @@ if ($f) {
     } elseif ($m === 'appr') {
         $allow = is_admin() || db_val('SELECT 1 FROM pm_apprs a WHERE a.id = ? AND (a.user_id = ? OR EXISTS (SELECT 1 FROM pm_appr_steps s WHERE s.appr_id = a.id AND s.user_id = ?))',
             array($rid, $me['id'], $me['id']));
+    } elseif ($m === 'disk') {
+        $d = db_row('SELECT space, user_id FROM pm_disk WHERE id = ?', array($rid));
+        $allow = $d && ($d['space'] !== 'personal' || (int)$d['user_id'] === (int)$me['id']);
     } elseif ($m === 'event' || $m === 'forum') {
         $allow = true;
     }

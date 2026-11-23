@@ -137,11 +137,12 @@ function pm_schema() {
         "CREATE TABLE IF NOT EXISTS `pm_forum_boards` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(50) NOT NULL DEFAULT '', `remark` VARCHAR(255) NOT NULL DEFAULT '', `sort` INT NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_forum_threads` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `board_id` INT UNSIGNED NOT NULL DEFAULT 0, `title` VARCHAR(200) NOT NULL DEFAULT '', `content` MEDIUMTEXT NULL, `is_top` TINYINT NOT NULL DEFAULT 0, `is_locked` TINYINT NOT NULL DEFAULT 0, `views` INT NOT NULL DEFAULT 0, `replies` INT NOT NULL DEFAULT 0, `last_reply_at` DATETIME NULL, `last_reply_user` VARCHAR(50) NOT NULL DEFAULT '', `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_ft_board` (`board_id`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_forum_posts` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `thread_id` INT UNSIGNED NOT NULL DEFAULT 0, `content` MEDIUMTEXT NULL, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_fp_thread` (`thread_id`)) $t",
+        "CREATE TABLE IF NOT EXISTS `pm_disk` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `space` VARCHAR(10) NOT NULL DEFAULT 'personal', `parent_id` INT UNSIGNED NOT NULL DEFAULT 0, `is_dir` TINYINT NOT NULL DEFAULT 0, `name` VARCHAR(200) NOT NULL DEFAULT '', `remark` VARCHAR(255) NOT NULL DEFAULT '', `size` BIGINT NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_parent` (`space`, `parent_id`), KEY `idx_user` (`user_id`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_meta` (`k` VARCHAR(50) NOT NULL, `v` VARCHAR(255) NOT NULL DEFAULT '', PRIMARY KEY (`k`)) $t",
     );
 }
 
-define('PM_SCHEMA_VER', '2');
+define('PM_SCHEMA_VER', '3');
 
 /** 首次訪問建表並寫入初始數據；之後按版本做增量升級 */
 function pm_install_if_needed() {
@@ -184,6 +185,14 @@ function pm_migrate() {
     if (!db_val("SELECT v FROM pm_meta WHERE k = 'seed2'")) {
         pm_seed_v2();
         db_q("REPLACE INTO pm_meta (k, v) VALUES ('seed2', '1')");
+    }
+    // 網盤資料示例（只寫入一次）
+    if (!db_val("SELECT v FROM pm_meta WHERE k = 'seed3'")) {
+        if (!db_val('SELECT COUNT(*) FROM pm_disk')) {
+            $adminId = (int)db_val("SELECT u.id FROM pm_users u JOIN pm_roles r ON r.id = u.role_id WHERE r.type IN ('admin', 'super') ORDER BY r.type, u.id LIMIT 1");
+            db_insert('pm_disk', array('space' => 'company', 'is_dir' => 1, 'name' => '工程資料', 'remark' => '示例文件夾', 'user_id' => $adminId, 'created_at' => $now));
+        }
+        db_q("REPLACE INTO pm_meta (k, v) VALUES ('seed3', '1')");
     }
     db_q("REPLACE INTO pm_meta (k, v) VALUES ('schema', ?)", array(PM_SCHEMA_VER));
 }

@@ -2,6 +2,11 @@
 /**
  * 通用附件（pm_files）：module + ref_id + field 定位所屬記錄
  */
+/** 網盤資料的三個空間 */
+function disk_spaces() {
+    return array('personal' => '個人文件', 'share' => '共享文件', 'company' => '公司文件');
+}
+
 function file_allowed_ext() {
     return array('pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'dwg', 'dxf', 'jpg', 'jpeg', 'png', 'gif', 'zip', 'rar', '7z', 'txt', 'csv');
 }

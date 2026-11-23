@@ -240,3 +240,9 @@ i.f-right{
 .pm-post .hd b{color:#1F5FA8;font-size:13px;}
 .pm-post .bd{padding:8px 10px;font-size:13px;line-height:22px;word-break:break-all;}
 .pm-post .bd .att{margin-top:8px;padding-top:6px;border-top:1px dashed #c9d9ee;color:#888;}
+/* 網盤資料 */
+.pm-crumb{padding:5px 10px;border-top:1px solid #ccc;background:#fafcff;line-height:20px;font-size:13px;}
+.pm-crumb a{color:#1F5FA8;}
+.pm-crumb-hint{float:right;color:#999;font-size:12px;}
+.pm-disk-path{color:#999;font-size:12px;padding-left:20px;}
+.pm-disk-tree .tree-file{background:url('../images/icons/folder_Close.gif') no-repeat center center;}

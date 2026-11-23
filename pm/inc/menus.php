@@ -37,6 +37,11 @@ function pm_menus() {
             $item('費用審批', '24002_s.gif', 'appr_expense'),
             $item('事項審批', '24301_s.gif', 'appr_matter'),
         )),
+        array('id' => 'disk', 'title' => '網盤資料', 'icon' => 'resource/images/menu/32.png', 'children' => array(
+            $item('個人文件', '32.png', 'disk_personal'),
+            $item('共享文件', '32.png', 'disk_share'),
+            $item('公司文件', '32.png', 'disk_company'),
+        )),
         array('id' => 'forum', 'title' => '工程論壇', 'icon' => 'resource/images/menu/xtgg.png', 'children' => array(
             $item('工程論壇', 'xtgg.png', 'forum'),
         )),
@@ -80,6 +85,7 @@ function pm_pages() {
         'appr_inquiry' => array('appr_list', false), 'appr_expense' => array('appr_list', false), 'appr_matter' => array('appr_list', false),
         'appr_view' => array('appr_view', false),
         'forum' => array('forum', false), 'forum_thread' => array('forum_thread', false),
+        'disk_personal' => array('disk', false), 'disk_share' => array('disk', false), 'disk_company' => array('disk', false),
     );
     foreach (array('position' => true, 'notice' => true, 'forum_board' => true, 'note' => false, 'todo' => false, 'customer' => false,
                  'customer_quote' => false, 'sub' => false, 'sub_quote' => false, 'material' => false, 'labor' => false) as $m => $adminOnly) {

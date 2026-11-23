@@ -82,6 +82,12 @@ if ($act === 'delete') {
     if ($old['type'] === 'super' && !is_super()) fail('只有超級管理員才能刪除超級管理員帳號');
     if (db_val('SELECT id FROM pm_apprs WHERE user_id = ? LIMIT 1', array($id)) || db_val('SELECT id FROM pm_appr_steps WHERE user_id = ? LIMIT 1', array($id))) fail('該用戶已參與內部審批，不能刪除，可改為停用');
     if (db_val('SELECT id FROM pm_docs WHERE creator_id = ? LIMIT 1', array($id))) fail('該用戶已創建工程文件，不能刪除，可改為停用');
+    // 刪除該用戶的個人網盤文件
+    require_once __DIR__ . '/../inc/files.php';
+    foreach (db_rows("SELECT id, is_dir FROM pm_disk WHERE space = 'personal' AND user_id = ?", array($id)) as $d) {
+        if (!$d['is_dir']) files_delete('disk', (int)$d['id']);
+        db_q('DELETE FROM pm_disk WHERE id = ?', array($d['id']));
+    }
     db_q('DELETE FROM pm_users WHERE id = ?', array($id));
     ok('刪除成功');
 }
