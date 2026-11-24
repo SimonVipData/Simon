@@ -25,6 +25,10 @@ $types = array('inquiry' => '詢價審批', 'expense' => '費用審批', 'matter
             </tbody>
         </table></div>
         <?php endif; ?>
+        <?php if ($admin && ($regN = (int)db_val('SELECT COUNT(*) FROM pm_users WHERE reg_state = 1 AND status = 0'))): ?>
+        <div class="pm-box" style="padding:0 0 6px 0;"><h4>待審核的用戶注冊（<?php echo $regN; ?>）</h4>
+        <div style="padding:2px 10px;">有 <?php echo $regN; ?> 個用戶注冊申請等待審核，請到「系統管理 → 注冊管理」處理。</div></div>
+        <?php endif; ?>
         <div class="pm-box" style="padding:0;"><h4>待審批內部審批（<?php echo count($apprs); ?>）</h4>
         <table class="table table-bordered table-condensed table-striped" style="margin:0;">
             <thead><tr><th width="150">審批編號</th><th width="90">類別</th><th>標題</th><th width="120">申請人</th><th width="160">提交時間</th><th width="60">操作</th></tr></thead>

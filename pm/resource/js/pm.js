@@ -12,6 +12,11 @@ var PM = {
             if ($.fn.pagination) $.extend($.fn.pagination.defaults, {beforePageText: '第', afterPageText: '共{pages}頁', displayMsg: '顯示{from}到{to}，共{total}條記錄'});
             if ($.fn.datagrid) $.fn.datagrid.defaults.loadMsg = '正在處理，請稍候...';
         }
+        // 文件拖到頁面其他位置時，不讓瀏覽器直接打開該文件而離開系統
+        $(document).on('dragover drop', function (e) {
+            var dt = e.originalEvent.dataTransfer;
+            if (dt && Array.prototype.indexOf.call(dt.types || [], 'Files') >= 0 && !$(e.target).is('input[type=file]')) e.preventDefault();
+        });
     },
     esc: function (s) {
         return s === null || s === undefined ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -82,7 +87,7 @@ var PM = {
     ping: function () {
         $.ajax({url: 'api/me.php', data: {act: 'ping'}, dataType: 'json', global: false}).done(function (res) {
             if (!res || !res.ok) return;
-            $('#ft_todo').text(res.doc + res.appr + res.notice);
+            $('#ft_todo').text(res.doc + res.appr + res.notice + (res.reg || 0));
             $('#ft_mail').text(res.mail);
             $('#ft_chat').text(res.chat);
             PM.counts = res;

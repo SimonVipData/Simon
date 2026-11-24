@@ -13,7 +13,8 @@ $projects = db_rows('SELECT id, code, name FROM pm_projects ORDER BY id');
             <button class="btn btn-primary btn-small" type="button" id="<?php echo $uid; ?>_search">查詢</button>
             <button class="btn btn-small" type="button" id="<?php echo $uid; ?>_clear">清空</button>
             <span style="float:right;">
-                <label style="display:inline;font-weight:normal;"><input type="checkbox" id="<?php echo $uid; ?>_hol" checked="checked" style="margin:0 4px 0 0;"/>澳門公眾假期</label>
+                <label class="pm-cal-chk"><input type="checkbox" id="<?php echo $uid; ?>_hol"/><i class="mo"></i>澳門假期</label>
+                <label class="pm-cal-chk"><input type="checkbox" id="<?php echo $uid; ?>_cn"/><i class="cn"></i>中國假期</label>
             </span>
         </div>
         <div class="pm-cal-nav">
@@ -39,9 +40,17 @@ $(function(){
     var U = '#<?php echo $uid; ?>', projects = <?php echo js_json(array_map(function ($p) { return array('value' => (string)$p['id'], 'text' => $p['code'] . ' ' . $p['name']); }, $projects)); ?>;
     var MARKS = [{k: 'is_star', t: '關注事件', i: '★', c: '#f0a500'}, {k: 'is_node', t: '工程節點', i: '⚑', c: '#d93025'}, {k: 'is_material', t: '工程材料', i: '⚙', c: '#e68a00'},
                  {k: 'is_person', t: '人員安排', i: '☻', c: '#1F5FA8'}, {k: 'is_plan', t: '工程計劃', i: '✎', c: '#2e8b57'}];
-    // 澳門固定日期的公眾假期（農曆假期逐年不同，未列入）
-    var HOL = {'01-01': '元旦', '05-01': '勞動節', '10-01': '國慶日', '10-02': '國慶日翌日', '11-02': '追思節', '12-08': '聖母無原罪瞻禮',
-               '12-20': '特區成立紀念日', '12-22': '冬至', '12-24': '聖誕節前日', '12-25': '聖誕節'};
+    // 假期開關記在瀏覽器本地：澳門假期默認顯示，中國假期默認顯示
+    function pref(k){ try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+    function setPref(k, v){ try { window.localStorage.setItem(k, v); } catch (e) {} }
+    $(U + '_hol').prop('checked', pref('pm_cal_mo') !== '0');
+    $(U + '_cn').prop('checked', pref('pm_cal_cn') !== '0');
+    function holTip(h){
+        var t = [];
+        if (h.mo) t.push('澳門：' + h.mo.n + '（' + h.mo.t + '假日）');
+        if (h.cn) t.push('中國內地：' + h.cn.n + (h.cn.legal ? '（法定節日）' : '（放假安排）'));
+        return t;
+    }
     var ym = '', sel = '', data = null;
     function pad(n){ return n < 10 ? '0' + n : '' + n; }
     function fmt(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
@@ -56,17 +65,20 @@ $(function(){
     }
     function eventsOn(date){ return $.grep(data.events, function(e){ return e.event_date === date; }); }
     function draw() {
-        var a = ym.split('-'), $b = $(U + '_days').empty(), d = parse(data.from), showHol = $(U + '_hol').prop('checked');
+        var a = ym.split('-'), $b = $(U + '_days').empty(), d = parse(data.from), showMo = $(U + '_hol').prop('checked'), showCn = $(U + '_cn').prop('checked');
         $(U + '_title').text(a[0] + ' 年 ' + (+a[1]) + ' 月');
         for (var w = 0; w < 6; w++) {
             var $tr = $('<tr/>').appendTo($b);
             for (var i = 0; i < 7; i++) {
                 (function(date, dt){
-                    var evs = eventsOn(date), hol = HOL[date.substr(5)];
+                    var evs = eventsOn(date), h = PMHoliday.get(date), mo = showMo && h.mo, cn = showCn && h.cn;
                     var $td = $('<td/>').toggleClass('other', date.substr(0, 7) !== ym).toggleClass('today', date === data.today).toggleClass('sel', date === sel)
                         .toggleClass('we', dt.getDay() === 0 || dt.getDay() === 6).appendTo($tr);
                     var $n = $('<div class="n"/>').text(dt.getDate()).appendTo($td);
-                    if (showHol && hol) { $td.addClass('hol'); $('<span/>').text(hol).appendTo($n); }
+                    // 同一天兩地都放假時，底色以澳門為準
+                    if (mo) { $td.addClass('hol mo'); $('<span class="mo"/>').text(mo.s).appendTo($n); }
+                    if (cn) { $td.addClass(mo ? '' : 'cn'); $('<span class="cn"/>').text(cn.s).appendTo($n); }
+                    if (mo || cn) $td.attr('title', holTip({mo: mo, cn: cn}).join('\n'));
                     $.each(evs.slice(0, 3), function(j, e){
                         $('<div class="e"/>').css('background', e.color).attr('title', e.title).text((e.start_time ? e.start_time + ' ' : '') + e.title).appendTo($td);
                     });
@@ -77,7 +89,8 @@ $(function(){
             }
         }
         $(U + '_box').layout('panel', 'east').panel('setTitle', sel + ' 當日事件');
-        var $day = $(U + '_day').empty(), evs = eventsOn(sel);
+        var $day = $(U + '_day').empty(), evs = eventsOn(sel), hs = PMHoliday.get(sel);
+        $.each(holTip({mo: showMo && hs.mo, cn: showCn && hs.cn}), function(i, t){ $('<div class="pm-cal-hol"/>').text(t).appendTo($day); });
         if (!evs.length) $('<div class="empty"/>').text('當天暫無事件，雙擊日期或點「新建事件」添加').appendTo($day);
         $.each(evs, function(i, e){ item(e, true).appendTo($day); });
         var $m = $(U + '_marks').empty();
@@ -151,7 +164,8 @@ $(function(){
     $(U + '_kw').keydown(function(ev){ if (ev.keyCode === 13) load(true); });
     $(U + '_project').change(function(){ load(true); });
     $(U + '_clear').click(function(){ $(U + '_kw').val(''); $(U + '_project').val('0'); load(true); });
-    $(U + '_hol').change(draw);
+    $(U + '_hol').change(function(){ setPref('pm_cal_mo', this.checked ? '1' : '0'); draw(); });
+    $(U + '_cn').change(function(){ setPref('pm_cal_cn', this.checked ? '1' : '0'); draw(); });
     load(false);
 });
 </script>

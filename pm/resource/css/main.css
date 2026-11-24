@@ -246,3 +246,23 @@ i.f-right{
 .pm-crumb-hint{float:right;color:#999;font-size:12px;}
 .pm-disk-path{color:#999;font-size:12px;padding-left:20px;}
 .pm-disk-tree .tree-file{background:url('../images/icons/folder_Close.gif') no-repeat center center;}
+/* 工程日曆假期 */
+.pm-cal-chk{display:inline !important;font-weight:normal;margin-left:12px;cursor:pointer;}
+.pm-cal-chk input{margin:0 4px 0 0;vertical-align:middle;}
+.pm-cal-chk i{display:inline-block;width:12px;height:12px;margin-right:4px;vertical-align:middle;border:1px solid #e6bd2e;background:#fff3bf;}
+.pm-cal-chk i.cn{border-color:#6ea8f5;background:#dceaff;}
+.pm-cal-grid td.mo{background:#fff9db;}
+.pm-cal-grid td.cn{background:#e7f0ff;}
+.pm-cal-grid td .n span.mo{color:#a07800;}
+.pm-cal-grid td .n span.cn{color:#2a62b0;}
+.pm-cal-hol{font-size:12px;line-height:20px;color:#8a6d00;background:#fff9db;border:1px solid #f0e2a0;padding:1px 6px;margin-bottom:4px;}
+/* 網盤拖拉上傳 */
+.pm-drop{outline:2px dashed #1F5FA8;outline-offset:-2px;}
+tr.pm-drop td{background:#d9e8ff !important;}
+.tree-node.pm-drop{background:#d9e8ff;}
+/* 注冊管理 */
+.pm-radio{display:inline !important;font-weight:normal;margin-right:16px;cursor:pointer;}
+.pm-radio input{margin:0 4px 0 0;vertical-align:middle;}
+.pm-note{color:#999;font-size:12px;margin-left:8px;}
+.pm-reg-fields td{border:0 !important;padding:2px 8px 2px 0 !important;}
+.pm-reg-fields select{width:90px;margin:0;height:26px;padding:2px 4px;font-size:13px;}

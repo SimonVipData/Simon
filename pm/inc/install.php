@@ -30,6 +30,7 @@ function pm_schema() {
             `credits` INT NOT NULL DEFAULT 1800,
             `credit_at` DATETIME NULL,
             `active_at` DATETIME NULL,
+            `reg_state` TINYINT NOT NULL DEFAULT 0,
             PRIMARY KEY (`id`), UNIQUE KEY `uk_username` (`username`), KEY `idx_role` (`role_id`)
         ) $t",
         "CREATE TABLE IF NOT EXISTS `pm_projects` (
@@ -142,7 +143,7 @@ function pm_schema() {
     );
 }
 
-define('PM_SCHEMA_VER', '3');
+define('PM_SCHEMA_VER', '4');
 
 /** 首次訪問建表並寫入初始數據；之後按版本做增量升級 */
 function pm_install_if_needed() {
@@ -166,6 +167,8 @@ function pm_migrate() {
     $add = array(
         'position_id' => 'INT UNSIGNED NOT NULL DEFAULT 0', 'credits' => 'INT NOT NULL DEFAULT ' . (CREDIT_INIT_MIN * 60),
         'credit_at' => 'DATETIME NULL', 'active_at' => 'DATETIME NULL',
+        // 1 = 自行注冊、等待管理員審核
+        'reg_state' => 'TINYINT NOT NULL DEFAULT 0',
     );
     foreach ($add as $name => $def) {
         if (!isset($cols[$name])) db()->exec("ALTER TABLE pm_users ADD COLUMN `$name` $def");

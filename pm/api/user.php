@@ -62,6 +62,7 @@ if ($act === 'save') {
         if (!$old) fail('用戶不存在');
         if ($old['type'] === 'super' && !is_super()) fail('只有超級管理員才能修改超級管理員帳號');
         if ($id === (int)$me['id'] && ($roleId !== (int)$me['role_id'] || $status !== 1)) fail('不能修改自己的角色或停用自己');
+        if ($status === 1) $data['reg_state'] = 0;
         db_update('pm_users', $data, $id);
     } else {
         if ($password === '') fail('請輸入密碼');

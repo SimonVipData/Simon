@@ -1,0 +1,32 @@
+/* 登錄 / 注冊頁 */
+body{margin:0;padding:0;font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#3a6ea5;}
+.login-wrap{position:relative;height:100vh;background:linear-gradient(135deg,#2b5f8f 0%,#3a6ea5 100%);display:flex;align-items:center;justify-content:center;}
+.login-box{width:420px;background:#fff;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.3);padding:40px 40px 30px;box-sizing:border-box;}
+.login-title{text-align:center;font-size:22px;color:#2b5f8f;margin-bottom:6px;font-weight:bold;}
+.login-sub{text-align:center;font-size:13px;color:#888;margin-bottom:24px;}
+.form-item{margin-bottom:16px;}
+.form-item label{display:block;font-size:13px;color:#555;margin-bottom:6px;}
+.form-item input{width:100%;height:38px;border:1px solid #d5d5d5;border-radius:4px;padding:0 12px;font-size:14px;box-sizing:border-box;outline:none;}
+.form-item input:focus{border-color:#3a6ea5;}
+.captcha-row{display:flex;align-items:center;gap:10px;}
+.captcha-row input{flex:1;}
+.captcha-row img{height:38px;border:1px solid #d5d5d5;border-radius:4px;cursor:pointer;}
+.login-btn{width:100%;height:42px;background:#3a6ea5;border:none;border-radius:4px;color:#fff;font-size:16px;cursor:pointer;margin-top:8px;}
+.login-btn:hover{background:#2b5f8f;}
+.login-error{background:#fdecea;color:#d93025;padding:8px 12px;border-radius:4px;font-size:13px;margin-bottom:16px;text-align:center;}
+.login-lang{text-align:right;font-size:12px;margin:-24px -20px 10px 0;}
+.login-lang a{color:#3a6ea5;text-decoration:none;cursor:pointer;}
+.login-footer{text-align:center;font-size:12px;color:#aaa;margin-top:20px;}
+.login-box.wide{width:480px;padding-top:30px;}
+.login-link{text-align:center;font-size:13px;margin-top:14px;color:#888;}
+.login-link a{color:#3a6ea5;text-decoration:none;}
+.login-ok{background:#e8f5e9;color:#2e7d32;padding:12px;border-radius:4px;font-size:14px;margin-bottom:16px;text-align:center;line-height:22px;}
+.form-item select{width:100%;height:38px;border:1px solid #d5d5d5;border-radius:4px;padding:0 8px;font-size:14px;box-sizing:border-box;outline:none;background:#fff;}
+.form-item label em{color:#d93025;font-style:normal;margin-right:2px;}
+.form-hint{font-size:12px;line-height:18px;margin-top:4px;color:#888;}
+.form-hint.ok{color:#2e7d32;}
+.form-hint.bad{color:#d93025;}
+.form-hint a{color:#3a6ea5;cursor:pointer;margin-right:8px;text-decoration:underline;}
+.form-row{display:flex;gap:12px;}
+.form-row .form-item{flex:1;min-width:0;}
+.login-wrap.tall{height:auto;min-height:100vh;padding:20px 0;box-sizing:border-box;}

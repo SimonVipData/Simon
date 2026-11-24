@@ -8,6 +8,7 @@ if (is_logged_in()) {
     exit;
 }
 
+$regOn = (bool)db_val("SELECT v FROM pm_meta WHERE k = 'reg_enabled' AND v = '1'");
 $error = isset($_SESSION['pm_flash']) ? (string)$_SESSION['pm_flash'] : '';
 unset($_SESSION['pm_flash']);
 $name = '';
@@ -24,11 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($name === '' || $password === '') {
         $error = '請輸入帳號和密碼';
     } else {
-        $u = db_row('SELECT u.id, u.username, u.password, u.status, u.credits, r.type AS role_type
+        $u = db_row('SELECT u.id, u.username, u.password, u.status, u.credits, u.reg_state, r.type AS role_type
                      FROM pm_users u LEFT JOIN pm_roles r ON r.id = u.role_id WHERE u.username = ?', array($name));
         $pass = $u && password_verify($password, $u['password']);
         if ($pass && (int)$u['status'] !== 1) {
-            $error = '該帳號已被停用';
+            $error = (int)$u['reg_state'] === 1 ? '您的注冊申請正在等待管理員審核' : '該帳號已被停用';
         } elseif (!$pass) {
             $error = '帳號或密碼錯誤';
         } elseif ($u['role_type'] === 'user' && (int)$u['credits'] <= 0) {
@@ -56,26 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="utf-8"/>
     <title><?php echo APP_NAME; ?></title>
     <link href="favicon.ico" rel="SHORTCUT ICON"/>
-    <style>
-        body{margin:0;padding:0;font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#3a6ea5;}
-        .login-wrap{position:relative;height:100vh;background:linear-gradient(135deg,#2b5f8f 0%,#3a6ea5 100%);display:flex;align-items:center;justify-content:center;}
-        .login-box{width:420px;background:#fff;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.3);padding:40px 40px 30px;box-sizing:border-box;}
-        .login-title{text-align:center;font-size:22px;color:#2b5f8f;margin-bottom:6px;font-weight:bold;}
-        .login-sub{text-align:center;font-size:13px;color:#888;margin-bottom:24px;}
-        .form-item{margin-bottom:16px;}
-        .form-item label{display:block;font-size:13px;color:#555;margin-bottom:6px;}
-        .form-item input{width:100%;height:38px;border:1px solid #d5d5d5;border-radius:4px;padding:0 12px;font-size:14px;box-sizing:border-box;outline:none;}
-        .form-item input:focus{border-color:#3a6ea5;}
-        .captcha-row{display:flex;align-items:center;gap:10px;}
-        .captcha-row input{flex:1;}
-        .captcha-row img{height:38px;border:1px solid #d5d5d5;border-radius:4px;cursor:pointer;}
-        .login-btn{width:100%;height:42px;background:#3a6ea5;border:none;border-radius:4px;color:#fff;font-size:16px;cursor:pointer;margin-top:8px;}
-        .login-btn:hover{background:#2b5f8f;}
-        .login-error{background:#fdecea;color:#d93025;padding:8px 12px;border-radius:4px;font-size:13px;margin-bottom:16px;text-align:center;}
-        .login-lang{text-align:right;font-size:12px;margin:-24px -20px 10px 0;}
-        .login-lang a{color:#3a6ea5;text-decoration:none;cursor:pointer;}
-        .login-footer{text-align:center;font-size:12px;color:#aaa;margin-top:20px;}
-    </style>
+    <link href="resource/css/login.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div class="login-wrap">
@@ -102,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <button type="submit" class="login-btn">登錄</button>
         </form>
+        <?php if ($regOn): ?><div class="login-link">還沒有帳號？<a href="register.php">立即注冊</a></div><?php endif; ?>
         <div class="login-footer"><?php echo APP_COPYRIGHT; ?></div>
     </div>
 </div>

@@ -15,6 +15,8 @@ function pm_counts($me) {
         'chat' => (int)db_val('SELECT COUNT(*) FROM pm_chat_msgs WHERE to_id = ? AND is_read = 0', array($uid))
                 + (int)db_val('SELECT COUNT(*) FROM pm_chat_msgs WHERE to_id = 0 AND from_id <> ? AND id > COALESCE((SELECT last_id FROM pm_chat_reads WHERE user_id = ?), 0)', array($uid, $uid)),
     );
+    // 管理員：待審核的注冊申請
+    $c['reg'] = is_admin() ? (int)db_val('SELECT COUNT(*) FROM pm_users WHERE reg_state = 1 AND status = 0') : 0;
     $c['total'] = array_sum($c);
     return $c;
 }

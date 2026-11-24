@@ -10,7 +10,7 @@ $hints = array(
     'company' => '公司文件所有用戶可見、可下載，由管理員維護。',
 );
 ?>
-<div class="easyui-layout" fit="true" border="false">
+<div class="easyui-layout" fit="true" border="false" id="<?php echo $uid; ?>_box">
     <div region="west" split="true" title="目錄列表" style="width:220px;padding:4px;">
         <ul id="<?php echo $uid; ?>_tree" class="pm-disk-tree"></ul>
     </div>
@@ -34,7 +34,7 @@ $hints = array(
                     </span>
                     <span style="float:right;"><button class="btn btn-primary btn-small" type="submit">查詢</button>&nbsp;<button class="btn btn-small" type="button" id="<?php echo $uid; ?>_clear">清空</button></span>
                 </div>
-                <div class="pm-crumb"><span id="<?php echo $uid; ?>_crumb"></span><span class="pm-crumb-hint"><?php echo h($hints[$space]); ?></span></div>
+                <div class="pm-crumb"><span id="<?php echo $uid; ?>_crumb"></span><span class="pm-crumb-hint"><?php echo h($hints[$space] . ($canCreate ? '可把文件直接拖拉到列表或文件夾上傳。' : '')); ?></span></div>
             </form>
         </div>
         <table id="<?php echo $uid; ?>_dg" toolbar="#<?php echo $uid; ?>_tb"></table>
@@ -135,8 +135,8 @@ $(function(){
     function done(dirChanged){ load(); if (dirChanged) loadTree(); }
     function del(rows){
         var hasDir = $.grep(rows, function(r){ return r.is_dir == 1; }).length > 0;
-        var msg = rows.length === 1 ? '確定要刪除「' + PM.esc(rows[0].name) + '」嗎？' : '確定要刪除勾選的 ' + rows.length + ' 項嗎？';
-        if (hasDir) msg += '<br/>注：如果文件夾內有文件，請先清空文件夾內文件！';
+        var msg = rows.length === 1 ? '確定要刪除「' + rows[0].name + '」嗎？' : '確定要刪除勾選的 ' + rows.length + ' 項嗎？';
+        if (hasDir) msg += '（注：如果文件夾內有文件，請先清空文件夾內文件）';
         PM.confirm(msg, function(){
             PM.post(url + '&act=delete', {ids: $.map(rows, function(r){ return r.id; }).join(',')}, function(){ done(hasDir); });
         });
@@ -194,6 +194,87 @@ $(function(){
         if ($.grep(rows, function(r){ return r.can_write != 1; }).length) return PM.alert(space === 'company' ? '只有管理員才能管理公司文件' : '勾選項中包含他人創建的文件，只能刪除自己創建的文件');
         del(rows);
     });
+
+    // ---- 拖拉上傳：拖到文件夾行或目錄樹節點 = 上傳到該文件夾；拖到列表其他位置 = 上傳到當前文件夾 ----
+    var MAX_SIZE = <?php echo (int)UPLOAD_MAX_SIZE; ?>, $mark = null;
+    function hasFiles(e){
+        var dt = e.originalEvent.dataTransfer;
+        return !!dt && Array.prototype.indexOf.call(dt.types || [], 'Files') >= 0;
+    }
+    function dropTarget(e){
+        var $t = $(e.target), $row = $t.closest('tr.datagrid-row'), $node = $t.closest('.tree-node');
+        if ($row.length) {
+            var row = $(dg).datagrid('getRows')[parseInt($row.attr('datagrid-row-index'), 10)];
+            if (row && row.is_dir == 1) return {id: row.id, name: row.name, $el: $row};
+        }
+        if ($node.length && $.contains($(tree)[0], $node[0])) {
+            var n = $(tree).tree('getNode', $node[0]);
+            return {id: n.id, name: n.id ? $('<i/>').html(n.text).text() : rootName, $el: $node};
+        }
+        return {id: cur, name: crumbs.length ? crumbs[crumbs.length - 1].name : rootName, $el: $(dg).datagrid('getPanel')};
+    }
+    function mark($el){
+        if ($mark) $mark.removeClass('pm-drop');
+        $mark = $el ? $el.addClass('pm-drop') : null;
+    }
+    function uploadFiles(files, target, skipped){
+        var i = 0, okN = 0, errs = [];
+        if (skipped) errs.push('暫不支持拖拉整個文件夾，已略過 ' + skipped + ' 個文件夾');
+        if (!files.length) return PM.alert(errs[0] || '沒有可上傳的文件');
+        $.messager.progress({title: '上傳文件', msg: '準備上傳…', text: ''});
+        (function next(){
+            if (i >= files.length) {
+                $.messager.progress('close');
+                if (okN) PM.tip('已上傳 ' + okN + ' 個文件到「' + target.name + '」');
+                if (errs.length) $.messager.alert('提示', $.map(errs, PM.esc).join('<br/>'), 'warning');
+                return done(false);
+            }
+            var f = files[i++], fd = new FormData();
+            $('.messager-p-msg').text('正在上傳 ' + i + ' / ' + files.length + '：' + f.name);
+            if (f.size > MAX_SIZE) { errs.push(f.name + '：文件不能超過 50MB'); return next(); }
+            fd.append('parent_id', target.id);
+            fd.append('f_file[]', f, f.name);
+            $.ajax({url: url + '&act=upload', type: 'POST', data: fd, processData: false, contentType: false, dataType: 'json'}).done(function(res){
+                if (res && res.ok) okN++;
+                else errs.push(f.name + '：' + (res && res.msg ? res.msg : '上傳失敗'));
+                next();
+            }).fail(function(xhr){
+                var res = xhr.responseJSON;
+                if (xhr.status === 401) { $.messager.progress('close'); return PM.kick(res && res.msg); }
+                errs.push(f.name + '：' + (res && res.msg ? res.msg : (xhr.status === 413 ? '文件過大，服務器拒絕接收' : '上傳失敗（' + xhr.status + '）')));
+                next();
+            });
+        })();
+    }
+    if (canCreate && window.FormData) {
+        $(U + '_box').on('dragenter dragover', function(e){
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            e.originalEvent.dataTransfer.dropEffect = 'copy';
+            var t = dropTarget(e);
+            if (!$mark || $mark[0] !== t.$el[0]) mark(t.$el);
+        }).on('dragleave', function(e){
+            var to = e.originalEvent.relatedTarget;
+            if (!to || !$.contains(this, to)) mark(null);
+        }).on('drop', function(e){
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            var t = dropTarget(e), dt = e.originalEvent.dataTransfer, files = [], skipped = 0, k;
+            mark(null);
+            if (dt.items && dt.items.length) {
+                for (k = 0; k < dt.items.length; k++) {
+                    var it = dt.items[k];
+                    if (it.kind !== 'file') continue;
+                    var en = it.webkitGetAsEntry ? it.webkitGetAsEntry() : null, f = it.getAsFile();
+                    if (en && en.isDirectory) skipped++;
+                    else if (f) files.push(f);
+                }
+            } else {
+                for (k = 0; k < dt.files.length; k++) files.push(dt.files[k]);
+            }
+            uploadFiles(files, t, skipped);
+        });
+    }
     loadTree();
 });
 </script>
