@@ -34,11 +34,39 @@ if ($act === 'logs') {
 }
 
 if ($act === 'ping') {
-    // 心跳：扣減積分（current_user 內完成）、更新在線時間、返回各類未讀數
+    // 心跳：扣減積分（current_user 內完成）、更新在線時間、返回各類未讀數；鎖定時仍可調用
+    $GLOBALS['pm_lock_ok'] = true;
     api_guard(false, false);
     $me = current_user();
     db_q('UPDATE pm_users SET active_at = ? WHERE id = ?', array(now(), $me['id']));
-    json_out(array('ok' => true, 'limited' => $me['role_type'] === 'user', 'credits' => (int)$me['credits']) + pm_counts($me));
+    json_out(array('ok' => true, 'locked' => !empty($_SESSION['pm_locked']), 'limited' => $me['role_type'] === 'user', 'credits' => (int)$me['credits']) + pm_counts($me));
+}
+
+/** 鎖定界面：鎖定狀態記在會話中，刷新頁面或新開標籤頁仍需輸入密碼 */
+if ($act === 'lock' || $act === 'unlock') {
+    $GLOBALS['pm_lock_ok'] = true;
+    api_guard();
+    $me = current_user();
+    if ($act === 'lock') {
+        $_SESSION['pm_locked'] = 1;
+        $_SESSION['pm_unlock_fail'] = 0;
+        ok('');
+    }
+    if (empty($_SESSION['pm_locked'])) ok('');
+    $pw = isset($_POST['password']) && is_string($_POST['password']) ? $_POST['password'] : '';
+    if ($pw === '') fail('請輸入登錄密碼');
+    if (!password_verify($pw, (string)db_val('SELECT password FROM pm_users WHERE id = ?', array($me['id'])))) {
+        $n = empty($_SESSION['pm_unlock_fail']) ? 1 : (int)$_SESSION['pm_unlock_fail'] + 1;
+        if ($n >= UNLOCK_MAX_FAIL) {
+            $_SESSION = array();
+            session_destroy();
+            json_out(array('ok' => false, 'timeout' => true, 'msg' => '密碼錯誤次數過多，已退出系統，請重新登錄'), 401);
+        }
+        $_SESSION['pm_unlock_fail'] = $n;
+        fail('密碼不正確，還可嘗試 ' . (UNLOCK_MAX_FAIL - $n) . ' 次');
+    }
+    unset($_SESSION['pm_locked'], $_SESSION['pm_unlock_fail']);
+    ok('解鎖成功');
 }
 
 api_guard();

@@ -5,6 +5,10 @@
 require_once __DIR__ . '/inc/config.php';
 require_once __DIR__ . '/inc/menus.php';
 require_login();
+if (!empty($_SESSION['pm_locked'])) {
+    echo '<div style="padding:20px;">系統界面已鎖定，請輸入密碼解鎖</div><script>PM.lockShow();</script>';
+    exit;
+}
 
 $name = param('name');
 $pages = pm_pages();

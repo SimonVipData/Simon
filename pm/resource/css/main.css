@@ -240,6 +240,10 @@ i.f-right{
 .pm-post .hd b{color:#1F5FA8;font-size:13px;}
 .pm-post .bd{padding:8px 10px;font-size:13px;line-height:22px;word-break:break-all;}
 .pm-post .bd .att{margin-top:8px;padding-top:6px;border-top:1px dashed #c9d9ee;color:#888;}
+.pm-pay{margin:6px 0;padding:8px 10px;background:#FFF8E1;border:1px solid #F0D58C;color:#8a6d3b;line-height:26px;}
+.pm-pay b{color:#d93025;}
+.pm-pay .l-btn{margin-left:8px;vertical-align:middle;}
+.pm-pay-info{margin-top:8px;padding-top:6px;border-top:1px dashed #c9d9ee;color:#888;font-size:12px;}
 /* 網盤資料 */
 .pm-crumb{padding:5px 10px;border-top:1px solid #ccc;background:#fafcff;line-height:20px;font-size:13px;}
 .pm-crumb a{color:#1F5FA8;}

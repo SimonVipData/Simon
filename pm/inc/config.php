@@ -11,6 +11,8 @@ define('UPLOAD_MAX_SIZE', 50 * 1024 * 1024);
 /** 積分：新用戶初始分鐘數；單次請求最多扣減的秒數（頁面每 30 秒心跳一次） */
 define('CREDIT_INIT_MIN', 30);
 define('CREDIT_TICK_CAP', 90);
+/** 解鎖界面時密碼最多錯誤次數，達到後退出系統 */
+define('UNLOCK_MAX_FAIL', 5);
 
 date_default_timezone_set('Asia/Macau');
 ini_set('display_errors', '0');
@@ -178,6 +180,10 @@ function api_guard($admin = false, $csrf = true) {
     if (!is_logged_in()) {
         $msg = !empty($GLOBALS['pm_credit_out']) ? '您的積分已用完，已退出系統' : '登錄已超時，請重新登錄';
         json_out(array('ok' => false, 'timeout' => true, 'msg' => $msg), 401);
+    }
+    // 界面已鎖定：除心跳、解鎖外的請求一律拒絕
+    if (!empty($_SESSION['pm_locked']) && empty($GLOBALS['pm_lock_ok'])) {
+        json_out(array('ok' => false, 'locked' => true, 'msg' => '系統界面已鎖定，請輸入密碼解鎖'), 423);
     }
     if ($csrf) {
         $t = isset($_SERVER['HTTP_X_CSRF_TOKEN']) ? $_SERVER['HTTP_X_CSRF_TOKEN'] : param('_csrf');

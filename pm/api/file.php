@@ -22,8 +22,17 @@ if ($f) {
     } elseif ($m === 'disk') {
         $d = db_row('SELECT space, user_id FROM pm_disk WHERE id = ?', array($rid));
         $allow = $d && ($d['space'] !== 'personal' || (int)$d['user_id'] === (int)$me['id']);
-    } elseif ($m === 'event' || $m === 'forum') {
-        $allow = true;
+    } elseif ($m === 'forum') {
+        // 付費貼：需已支付（或為發貼人、管理員）才能下載附件
+        require_once __DIR__ . '/../inc/forum.php';
+        $t = db_row('SELECT id, user_id, pay_view, pay_file FROM pm_forum_threads WHERE id = ?', array($rid));
+        if ($t) {
+            $acc = forum_access($t, $me);
+            $allow = $acc['file'];
+        }
+    } elseif ($m === 'event') {
+        require_once __DIR__ . '/../inc/panel.php';
+        $allow = !cal_own_only() || (int)db_val('SELECT user_id FROM pm_events WHERE id = ?', array($rid)) === (int)$me['id'];
     }
 }
 $path = $f ? UPLOAD_DIR . '/' . $f['file_path'] : '';

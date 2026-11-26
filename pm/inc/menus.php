@@ -48,6 +48,7 @@ function pm_menus() {
     );
     if ($admin) {
         $sys = array(
+            $item('控制面板', 'gear.png', 'sys_panel'),
             $item('角色管理', 'gstxl.png', 'sys_role'),
             $item('職位管理', '26.png', 'position'),
             $item('用戶管理', 'grtxl.png', 'sys_user'),
@@ -78,6 +79,7 @@ function pm_pages() {
         'sys_role' => array('sys_role', true), 'sys_user' => array('sys_user', true),
         'sys_flow' => array('sys_flow', true), 'sys_db' => array('sys_db', 'super'),
         'sys_credit' => array('sys_credit', true), 'sys_reg' => array('sys_reg', true),
+        'sys_panel' => array('sys_panel', true),
         'user_info' => array('user_info', false), 'user_pw' => array('user_pw', false), 'log_login' => array('log_login', false),
         'office_remind' => array('office_remind', false), 'office_chat' => array('office_chat', false),
         'office_mail' => array('office_mail', false), 'mail_view' => array('mail_view', false),

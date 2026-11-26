@@ -26,6 +26,7 @@ $admin = is_admin();
                 <a href="javascript:void(0);" class="easyui-menubutton" menu="#layout_north_gryhMenu" iconCls="ui-icon-cog">當前用戶：<?php echo h($user['username']); ?>（<?php echo h($user['role_name']); ?>）</a>
             </div>
             <div id="layout_north_gryhMenu" style="width:150px;display:none;">
+                <div iconCls="ui-icon-lock" onclick="PM.lock()">鎖定界面</div>
                 <div iconCls="icon-back" onclick="goOutSystem()">安全退出</div>
                 <div class="menu-sep"></div>
                 <div>
@@ -49,6 +50,9 @@ $admin = is_admin();
                 <div>
                     <a href="javascript:void(0)" onclick="MUI.openDialog('即時溝通','page.php?name=office_chat','dlg_office_chat',{width:900,height:540})" title="未讀即時消息">
                         <img src="resource/images/menu/reply.gif" alt="即時溝通" style="vertical-align:middle;"/>(<span style="color:red" id="ft_chat">0</span>)</a>
+                </div>
+                <div>
+                    <a href="javascript:void(0)" onclick="PM.lock()" title="鎖定系統界面"><img src="resource/js/ui/images/icon/lock.png" alt="鎖定" style="vertical-align:middle;"/></a>
                 </div>
                 <?php if (!$admin): ?>
                 <div style="width:auto;padding:0 6px;" title="積分即可使用本系統的分鐘數，用完後將自動退出">積分：<b style="color:#d93025" id="ft_credit"><?php echo (int)ceil($user['credits'] / 60); ?></b> 分鐘</div>
@@ -121,7 +125,7 @@ $admin = is_admin();
 </div>
 
 <script type="text/javascript">
-    PM.init({csrf: '<?php echo csrf_token(); ?>', admin: <?php echo $admin ? 'true' : 'false'; ?>, userId: <?php echo (int)$user['id']; ?>, roleId: <?php echo (int)$user['role_id']; ?>});
+    PM.init({csrf: '<?php echo csrf_token(); ?>', admin: <?php echo $admin ? 'true' : 'false'; ?>, userId: <?php echo (int)$user['id']; ?>, username: <?php echo js_json($user['username']); ?>, roleId: <?php echo (int)$user['role_id']; ?>});
     function goOutSystem() { window.location.href = 'logout.php'; }
     $(function(){
         function pad(n){return n<10?'0'+n:''+n;}
@@ -131,6 +135,7 @@ $admin = is_admin();
         }
         tick(); setInterval(tick, 1000);
         PM.ping(); setInterval(PM.ping, 30000);
+        <?php if (!empty($_SESSION['pm_locked'])): ?>PM.lockShow();<?php endif; ?>
     });
 </script>
 </body>

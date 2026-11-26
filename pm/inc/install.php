@@ -136,14 +136,16 @@ function pm_schema() {
         "CREATE TABLE IF NOT EXISTS `pm_appr_steps` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `appr_id` INT UNSIGNED NOT NULL DEFAULT 0, `step_no` INT NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `user_name` VARCHAR(50) NOT NULL DEFAULT '', `status` TINYINT NOT NULL DEFAULT 0, `comment` VARCHAR(500) NOT NULL DEFAULT '', `acted_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_as_appr` (`appr_id`, `step_no`), KEY `idx_as_user` (`user_id`, `status`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_appr_logs` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `appr_id` INT UNSIGNED NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `user_name` VARCHAR(50) NOT NULL DEFAULT '', `action` VARCHAR(20) NOT NULL DEFAULT '', `comment` VARCHAR(500) NOT NULL DEFAULT '', `created_at` DATETIME NOT NULL, PRIMARY KEY (`id`), KEY `idx_al_appr` (`appr_id`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_forum_boards` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(50) NOT NULL DEFAULT '', `remark` VARCHAR(255) NOT NULL DEFAULT '', `sort` INT NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`)) $t",
-        "CREATE TABLE IF NOT EXISTS `pm_forum_threads` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `board_id` INT UNSIGNED NOT NULL DEFAULT 0, `title` VARCHAR(200) NOT NULL DEFAULT '', `content` MEDIUMTEXT NULL, `is_top` TINYINT NOT NULL DEFAULT 0, `is_locked` TINYINT NOT NULL DEFAULT 0, `views` INT NOT NULL DEFAULT 0, `replies` INT NOT NULL DEFAULT 0, `last_reply_at` DATETIME NULL, `last_reply_user` VARCHAR(50) NOT NULL DEFAULT '', `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_ft_board` (`board_id`)) $t",
+        "CREATE TABLE IF NOT EXISTS `pm_forum_threads` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `board_id` INT UNSIGNED NOT NULL DEFAULT 0, `title` VARCHAR(200) NOT NULL DEFAULT '', `content` MEDIUMTEXT NULL, `is_top` TINYINT NOT NULL DEFAULT 0, `is_locked` TINYINT NOT NULL DEFAULT 0, `views` INT NOT NULL DEFAULT 0, `replies` INT NOT NULL DEFAULT 0, `last_reply_at` DATETIME NULL, `last_reply_user` VARCHAR(50) NOT NULL DEFAULT '', `pay_view` INT NOT NULL DEFAULT 0, `pay_file` INT NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_ft_board` (`board_id`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_forum_posts` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `thread_id` INT UNSIGNED NOT NULL DEFAULT 0, `content` MEDIUMTEXT NULL, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_fp_thread` (`thread_id`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_disk` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `space` VARCHAR(10) NOT NULL DEFAULT 'personal', `parent_id` INT UNSIGNED NOT NULL DEFAULT 0, `is_dir` TINYINT NOT NULL DEFAULT 0, `name` VARCHAR(200) NOT NULL DEFAULT '', `remark` VARCHAR(255) NOT NULL DEFAULT '', `size` BIGINT NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_parent` (`space`, `parent_id`), KEY `idx_user` (`user_id`)) $t",
+        // 論壇付費記錄：kind = view 查看貼子 / file 下載附件；amount 為支付的積分（分鐘）
+        "CREATE TABLE IF NOT EXISTS `pm_forum_pays` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `thread_id` INT UNSIGNED NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `kind` VARCHAR(4) NOT NULL DEFAULT 'view', `amount` INT NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `uk_fpay` (`thread_id`, `user_id`, `kind`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_meta` (`k` VARCHAR(50) NOT NULL, `v` VARCHAR(255) NOT NULL DEFAULT '', PRIMARY KEY (`k`)) $t",
     );
 }
 
-define('PM_SCHEMA_VER', '4');
+define('PM_SCHEMA_VER', '5');
 
 /** 首次訪問建表並寫入初始數據；之後按版本做增量升級 */
 function pm_install_if_needed() {
@@ -172,6 +174,12 @@ function pm_migrate() {
     );
     foreach ($add as $name => $def) {
         if (!isset($cols[$name])) db()->exec("ALTER TABLE pm_users ADD COLUMN `$name` $def");
+    }
+    // 論壇付費貼：查看 / 下載附件所需積分（分鐘），0 為免費
+    $cols = array();
+    foreach (db_rows('SHOW COLUMNS FROM pm_forum_threads') as $c) $cols[$c['Field']] = true;
+    foreach (array('pay_view', 'pay_file') as $name) {
+        if (!isset($cols[$name])) db()->exec("ALTER TABLE pm_forum_threads ADD COLUMN `$name` INT NOT NULL DEFAULT 0");
     }
     $now = now();
     // 超級管理員角色與 xadmin 帳號

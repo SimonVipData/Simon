@@ -36,6 +36,11 @@ $(function(){
         columns: [[
             {field: 'title', title: '主題', width: 380, formatter: function(v, row){
                 return (row.is_top == 1 ? '<span style="color:#d93025">[置頂]</span> ' : '') + (row.is_locked == 1 ? '<span style="color:#888">[鎖定]</span> ' : '') + PM.esc(v); }},
+            {field: 'pay_view', title: '所需積分', width: 120, align: 'center', formatter: function(v, row){
+                var a = [];
+                if (row.pay_view > 0) a.push('<span style="color:' + (row.need_view ? '#d93025' : '#888') + '">查看 ' + parseInt(row.pay_view, 10) + '</span>');
+                if (row.pay_file > 0) a.push('<span style="color:' + (row.need_file ? '#d93025' : '#888') + '">附件 ' + parseInt(row.pay_file, 10) + '</span>');
+                return a.length ? a.join(' / ') : '<span style="color:#888">免費</span>'; }},
             {field: 'board_name', title: '版塊', width: 110, align: 'center'},
             {field: 'creator_name', title: '作者', width: 100, align: 'center'},
             {field: 'replies', title: '回覆', width: 50, align: 'center'},
@@ -50,7 +55,7 @@ $(function(){
     function view(row) {
         PM.dialog(row.title, 'page.php?name=forum_thread&id=' + row.id, {width: 900, height: 600, onClose: function(){ $(this).dialog('destroy'); PM.reload(dg); }});
     }
-    function form(init, id) {
+    function form(init, id, canPrice) {
         if (!boards.length) return PM.alert('尚未設置論壇版塊，請聯繫管理員');
         PM.form({title: id ? '修改主題' : '發表主題', width: 680, data: init, url: 'api/forum.php?act=save', extra: {id: id || 0}, okText: '發表',
             fields: [
@@ -58,16 +63,19 @@ $(function(){
                 {name: 'title', label: '標題', required: true},
                 {name: 'content', label: '內容', type: 'textarea', rows: 10, required: true},
                 {name: 'att', label: '附件', type: 'files', files: init.files || []}
-            ],
+            ].concat(canPrice ? [
+                {name: 'pay_view', label: '查看需付積分', type: 'number', value: 0, hint: '其他用戶需支付該積分後才能查看貼子內容和回覆；0 為免費'},
+                {name: 'pay_file', label: '下載需付積分', type: 'number', value: 0, hint: '其他用戶需支付該積分後才能下載附件；0 為免費。積分全數轉給您，每人每項只付一次（1 積分 = 1 分鐘）'}
+            ] : []),
             onOk: function(){ PM.reload(dg); }});
     }
-    $(U + '_add').click(function(){ form({board_id: $(U + '_board').val()}); });
+    $(U + '_add').click(function(){ form({board_id: $(U + '_board').val()}, 0, <?php echo $admin ? 'false' : 'true'; ?>); });
     $(U + '_view').click(function(){ var r = PM.selected(dg); if (r) view(r); });
     $(U + '_edit').click(function(){
         var r = PM.selected(dg);
         if (!r) return;
         if (!r.can_write) return PM.alert('只能修改自己發表的主題');
-        $.getJSON('api/forum.php', {act: 'get', id: r.id}, function(res){ if (res && res.ok) form($.extend({}, res.thread, {files: res.files}), r.id); });
+        $.getJSON('api/forum.php', {act: 'get', id: r.id}, function(res){ if (res && res.ok) form($.extend({}, res.thread, {files: res.files}), r.id, res.thread.can_price); });
     });
     $(U + '_del').click(function(){
         var r = PM.selected(dg);

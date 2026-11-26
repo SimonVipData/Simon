@@ -6,6 +6,7 @@ var PM = {
     init: function (cfg) {
         PM.cfg = cfg;
         $.ajaxSetup({headers: {'X-CSRF-Token': cfg.csrf}});
+        $(document).ajaxError(function (e, xhr) { if (xhr.status === 423) PM.lockShow(); });
         // EasyUI 自帶簡體語言包：繁體模式下覆蓋常用文字
         if (!window.PMLang || PMLang.lang !== 'sc') {
             if ($.messager) { $.messager.defaults.ok = '確定'; $.messager.defaults.cancel = '取消'; }
@@ -51,6 +52,8 @@ var PM = {
             var res = xhr.responseJSON;
             if (xhr.status === 401) {
                 PM.kick(res && res.msg);
+            } else if (xhr.status === 423) {
+                PM.lockShow();
             } else {
                 PM.alert(res && res.msg ? res.msg : '請求失敗（' + xhr.status + '）', 'error');
             }
@@ -92,6 +95,7 @@ var PM = {
             $('#ft_chat').text(res.chat);
             PM.counts = res;
             if (res.limited) PM.setCredits(res.credits);
+            if (res.locked) PM.lockShow();
         }).fail(function (xhr) {
             if (xhr.status === 401) PM.kick(xhr.responseJSON && xhr.responseJSON.msg);
         });
@@ -105,6 +109,34 @@ var PM = {
                 if (left <= 0) { clearInterval(PM.creditTimer); PM.creditTimer = null; PM.ping(); }
             }, 1000);
         }
+    },
+    /** 鎖定系統界面 */
+    lock: function () {
+        PM.post('api/me.php?act=lock', {}, PM.lockShow);
+    },
+    /** 顯示鎖定窗口：輸入登錄密碼解鎖 */
+    lockShow: function () {
+        if (PM.$lock) return;
+        var $d = PM.$lock = $('<div/>').appendTo('body');
+        var $f = $('<form onsubmit="return false;" style="width:350px;margin:20px auto;"/>').appendTo($d);
+        $('<div class="alert alert-error"/>').text('界面已鎖定，請輸入登錄密碼解鎖！').appendTo($f);
+        var $pw = $('<input type="password" maxlength="64" autocomplete="current-password" style="width:180px;margin:0;"/>').appendTo($f);
+        $('<label style="display:inline;font-weight:normal;margin:0 6px;"/>').append($('<input type="checkbox" style="margin:0 3px 0 0;"/>').change(function () {
+            $pw.attr('type', this.checked ? 'text' : 'password');
+        })).append('顯示密碼').appendTo($f);
+        $('<button type="submit" class="btn btn-primary">解鎖</button>').appendTo($f);
+        $('<div style="margin-top:10px;font-size:12px;color:#888;"/>').text('當前用戶：' + (PM.cfg.username || '') + '　').append($('<a href="logout.php">安全退出</a>')).appendTo($f);
+        $f.submit(function () {
+            if (!$pw.val()) return PM.alert('請輸入登錄密碼');
+            PM.post('api/me.php?act=unlock', {password: $pw.val()}, function () {
+                PM.$lock = null;
+                $d.dialog('destroy');
+            });
+            $pw.val('');
+        });
+        $d.dialog({title: '系統已鎖定', width: 500, height: 200, modal: true, closable: false, collapsible: false, minimizable: false,
+            maximizable: false, resizable: false, draggable: false});
+        setTimeout(function () { $pw.focus(); }, 100);
     },
     kick: function (msg) {
         if (PM.kicked) return;

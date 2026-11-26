@@ -89,6 +89,7 @@ if ($act === 'delete') {
         if (!$d['is_dir']) files_delete('disk', (int)$d['id']);
         db_q('DELETE FROM pm_disk WHERE id = ?', array($d['id']));
     }
+    db_q('DELETE FROM pm_forum_pays WHERE user_id = ?', array($id));
     db_q('DELETE FROM pm_users WHERE id = ?', array($id));
     ok('刪除成功');
 }

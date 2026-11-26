@@ -2,6 +2,7 @@
 /** 工程日曆：事件、圖片/附件、標記（關注 / 工程節點 / 工程材料 / 人員 / 計劃） */
 require_once __DIR__ . '/../inc/config.php';
 require_once __DIR__ . '/../inc/files.php';
+require_once __DIR__ . '/../inc/panel.php';
 $act = param('act', 'month');
 api_guard(false, $act !== 'month');
 $me = current_user();
@@ -33,10 +34,12 @@ if ($act === 'month') {
     $to = date('Y-m-d', strtotime('+41 day', strtotime($from)));
     $where = array('1=1');
     $args = array();
+    // 控制面板開啟「只顯示自己創建的事件」時，普通用戶只看到自己的事件
+    if (cal_own_only()) { $where[] = 'e.user_id = ?'; $args[] = $uid; }
     if (($pid = param_int('project_id')) > 0) { $where[] = 'e.project_id = ?'; $args[] = $pid; }
     if (($kw = param('keyword')) !== '') { $where[] = '(e.title LIKE ? OR e.content LIKE ?)'; $args[] = like_kw($kw); $args[] = like_kw($kw); }
     $w = implode(' AND ', $where);
-    $out = array('ok' => true, 'ym' => $ym, 'from' => $from, 'today' => date('Y-m-d'),
+    $out = array('ok' => true, 'own_only' => cal_own_only(), 'ym' => $ym, 'from' => $from, 'today' => date('Y-m-d'),
         'events' => event_rows("$w AND e.event_date BETWEEN ? AND ?", array_merge($args, array($from, $to)), 'ORDER BY e.event_date, e.start_time, e.id'),
         'marks' => array());
     foreach ($marks as $k) $out['marks'][$k] = event_rows("$w AND e.`$k` = 1", $args, 'ORDER BY e.event_date DESC, e.id DESC LIMIT 50');

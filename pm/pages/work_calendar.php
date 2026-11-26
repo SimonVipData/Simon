@@ -13,6 +13,7 @@ $projects = db_rows('SELECT id, code, name FROM pm_projects ORDER BY id');
             <button class="btn btn-primary btn-small" type="button" id="<?php echo $uid; ?>_search">查詢</button>
             <button class="btn btn-small" type="button" id="<?php echo $uid; ?>_clear">清空</button>
             <span style="float:right;">
+                <?php require_once __DIR__ . '/../inc/panel.php'; if (cal_own_only()): ?><span class="pm-note" style="margin-right:12px;">只顯示自己創建的事件</span><?php endif; ?>
                 <label class="pm-cal-chk"><input type="checkbox" id="<?php echo $uid; ?>_hol"/><i class="mo"></i>澳門假期</label>
                 <label class="pm-cal-chk"><input type="checkbox" id="<?php echo $uid; ?>_cn"/><i class="cn"></i>中國假期</label>
             </span>
