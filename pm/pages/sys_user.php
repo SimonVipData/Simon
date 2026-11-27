@@ -2,6 +2,7 @@
 /** 用戶管理 */
 $roles = db_rows('SELECT id, name, type FROM pm_roles' . (is_super() ? '' : " WHERE type <> 'super'") . ' ORDER BY sort, id');
 $positions = db_rows('SELECT id, name FROM pm_positions ORDER BY sort, id');
+$projects = db_rows('SELECT id, code, name, name_en FROM pm_projects ORDER BY id');
 ?>
 <div id="<?php echo $uid; ?>_tb" class="search-div">
     <form onsubmit="return datagridSearch(this,'<?php echo $uid; ?>_dg');">
@@ -48,6 +49,7 @@ $(function(){
             {field: 'role_name', title: '角色', width: 110, align: 'center'},
             {field: 'role_type', title: '類別', width: 80, align: 'center', formatter: function(v){ return v === 'super' ? '<span style="color:#d93025">超級管理員</span>' : (v === 'admin' ? '<span style="color:#d93025">管理員</span>' : '普通用戶'); }},
             {field: 'position_name', title: '職位', width: 100, align: 'center'},
+            {field: 'project_names', title: '所屬工程', width: 150, formatter: function(v, row){ return row.role_type !== 'user' ? '全部' : (v ? PM.esc(v) : '<span style="color:#d93025">未指定</span>'); }},
             {field: 'credit_min', title: '積分(分鐘)', width: 80, align: 'center', formatter: function(v, row){ return row.role_type === 'user' ? PM.esc(v) : '不限'; }},
             {field: 'company', title: '單位', width: 160},
             {field: 'phone', title: '電話', width: 110, align: 'center'},
@@ -57,7 +59,11 @@ $(function(){
             {field: 'created_at', title: '創建時間', width: 150, align: 'center'}
         ]]
     });
+    var projects = <?php echo js_json(array_map(function ($p) {
+        return array('value' => (string)$p['id'], 'text' => $p['name_en'] . ' ' . $p['name']);
+    }, $projects)); ?>;
     function edit(row) {
+        var pick = PM.checkGroup(projects, row && row.project_ids ? String(row.project_ids).split(',') : []);
         PM.form({
             title: row ? '修改用戶' : '新增用戶', width: 560, data: row || {status: 1},
             url: 'api/user.php?act=save', extra: {id: row ? row.id : 0},
@@ -67,6 +73,7 @@ $(function(){
                 {name: 'real_name', label: '姓名'},
                 {name: 'role_id', label: '角色', type: 'select', options: roles, required: true},
                 {name: 'position_id', label: '職位', type: 'select', options: positions},
+                {name: 'project_ids', label: '所屬工程', type: 'custom', render: function($el){ pick.render($el); $('<div class="pm-form-hint"/>').text('可選多個工程；沒有所屬工程的用戶不能查閱工程文件及相關信息。管理員不受限制。').appendTo($el); }, getValue: function(){ return pick.getValue(); }},
                 {name: 'company', label: '單位'},
                 {name: 'phone', label: '電話'},
                 {name: 'email', label: '郵箱'},

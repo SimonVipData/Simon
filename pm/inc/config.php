@@ -251,3 +251,4 @@ function user_options($excludeId = 0) {
     return db_rows("SELECT u.id, u.username, u.real_name, r.name AS role_name FROM pm_users u LEFT JOIN pm_roles r ON r.id = u.role_id
                     WHERE u.status = 1 AND u.id <> ? ORDER BY r.sort, u.id", array((int)$excludeId));
 }
+require_once __DIR__ . '/proj.php';

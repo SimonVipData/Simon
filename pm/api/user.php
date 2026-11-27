@@ -25,7 +25,9 @@ if ($act === 'list') {
     $w = implode(' AND ', $where);
     $rows = db_rows("SELECT u.id,u.username,u.real_name,u.role_id,u.position_id,u.company,u.phone,u.email,u.status,u.last_login,u.created_at,
                             CEIL(u.credits / 60) AS credit_min, u.active_at,
-                            r.name AS role_name, r.type AS role_type, p.name AS position_name
+                            r.name AS role_name, r.type AS role_type, p.name AS position_name,
+                            (SELECT GROUP_CONCAT(up.project_id) FROM pm_user_projects up WHERE up.user_id = u.id) AS project_ids,
+                            (SELECT GROUP_CONCAT(pj.name_en SEPARATOR '、') FROM pm_user_projects up JOIN pm_projects pj ON pj.id = up.project_id WHERE up.user_id = u.id) AS project_names
                      FROM pm_users u LEFT JOIN pm_roles r ON r.id = u.role_id LEFT JOIN pm_positions p ON p.id = u.position_id
                      WHERE $w ORDER BY u.id LIMIT $limit OFFSET $offset", $args);
     json_out(array('total' => (int)db_val("SELECT COUNT(*) FROM pm_users u WHERE $w", $args), 'rows' => $rows));
@@ -56,6 +58,9 @@ if ($act === 'save') {
         'company' => mb_substr(param('company'), 0, 100), 'phone' => mb_substr(param('phone'), 0, 30), 'email' => $email, 'status' => $status,
     );
     if ($password !== '') $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+    // 所屬工程：只對普通用戶有效（管理員可查閱全部工程）
+    $projectIds = $role['type'] === 'user' ? array_values(array_unique(array_filter(array_map('intval', explode(',', param('project_ids')))))) : array();
+    if ($projectIds && (int)db_val('SELECT COUNT(*) FROM pm_projects WHERE id IN (' . implode(',', $projectIds) . ')') !== count($projectIds)) fail('所屬工程不存在');
 
     if ($id) {
         $old = db_row('SELECT u.id, r.type FROM pm_users u LEFT JOIN pm_roles r ON r.id = u.role_id WHERE u.id = ?', array($id));
@@ -64,14 +69,18 @@ if ($act === 'save') {
         if ($id === (int)$me['id'] && ($roleId !== (int)$me['role_id'] || $status !== 1)) fail('不能修改自己的角色或停用自己');
         if ($status === 1) $data['reg_state'] = 0;
         db_update('pm_users', $data, $id);
+        $uidSaved = $id;
     } else {
         if ($password === '') fail('請輸入密碼');
         $data['created_at'] = now();
         $data['credits'] = CREDIT_INIT_MIN * 60;
         $newId = db_insert('pm_users', $data);
+        $uidSaved = $newId;
         db_insert('pm_credit_logs', array('target_id' => $newId, 'delta' => CREDIT_INIT_MIN, 'balance' => CREDIT_INIT_MIN, 'remark' => '新用戶初始積分',
             'user_id' => $me['id'], 'created_at' => now()));
     }
+    db_q('DELETE FROM pm_user_projects WHERE user_id = ?', array($uidSaved));
+    foreach ($projectIds as $pid) db_q('INSERT INTO pm_user_projects (user_id, project_id) VALUES (?, ?)', array($uidSaved, $pid));
     ok('保存成功');
 }
 
@@ -90,6 +99,7 @@ if ($act === 'delete') {
         db_q('DELETE FROM pm_disk WHERE id = ?', array($d['id']));
     }
     db_q('DELETE FROM pm_forum_pays WHERE user_id = ?', array($id));
+    db_q('DELETE FROM pm_user_projects WHERE user_id = ?', array($id));
     db_q('DELETE FROM pm_users WHERE id = ?', array($id));
     ok('刪除成功');
 }

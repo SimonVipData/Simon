@@ -7,7 +7,7 @@ $conf = array(
     'matter' => array('事項審批', '', '', '事項類別', array('請示', '報告', '請假', '用印', '採購', '其他')),
 );
 $c = $conf[$type];
-$projects = db_rows('SELECT id, code, name FROM pm_projects ORDER BY id');
+$projects = db_rows('SELECT p.id, p.code, p.name FROM pm_projects p WHERE ' . project_scope_sql('p.id') . ' ORDER BY p.id');
 $users = user_options($user['id']);
 ?>
 <div id="<?php echo $uid; ?>_tb" class="search-div">

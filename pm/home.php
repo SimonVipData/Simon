@@ -4,14 +4,14 @@ require_once __DIR__ . '/inc/config.php';
 require_login();
 $user = current_user();
 $admin = is_admin();
-$project = db_row('SELECT * FROM pm_projects ORDER BY id LIMIT 1');
+$project = db_row('SELECT * FROM pm_projects p WHERE ' . project_scope_sql('p.id') . ' ORDER BY p.id LIMIT 1');
 $stat = array(DOC_DRAFT => 0, DOC_PENDING => 0, DOC_APPROVED => 0, DOC_REJECTED => 0);
-foreach (db_rows('SELECT status, COUNT(*) AS n FROM pm_docs GROUP BY status') as $r) $stat[(int)$r['status']] = (int)$r['n'];
+foreach (db_rows('SELECT status, COUNT(*) AS n FROM pm_docs d WHERE ' . project_scope_sql('d.project_id') . ' GROUP BY status') as $r) $stat[(int)$r['status']] = (int)$r['n'];
 $todo = $admin ? array() : db_rows(
     "SELECT d.id, d.doc_no, d.title, d.submitted_at, COALESCE(NULLIF(u.real_name, ''), u.username) AS creator_name
      FROM pm_docs d JOIN pm_doc_steps s ON s.doc_id = d.id AND s.round = d.round
      LEFT JOIN pm_users u ON u.id = d.creator_id
-     WHERE d.status = ? AND s.status = ? AND s.role_id = ? ORDER BY d.id DESC LIMIT 10", array(DOC_PENDING, STEP_CURRENT, $user['role_id']));
+     WHERE d.status = ? AND s.status = ? AND s.role_id = ? AND " . project_scope_sql('d.project_id') . " ORDER BY d.id DESC LIMIT 10", array(DOC_PENDING, STEP_CURRENT, $user['role_id']));
 $notices = db_rows("SELECT n.id, n.title, n.created_at, COALESCE(NULLIF(u.real_name, ''), u.username) AS creator_name,
                            (SELECT COUNT(*) FROM pm_notice_reads r WHERE r.notice_id = n.id AND r.user_id = ?) AS is_read
                     FROM pm_notices n LEFT JOIN pm_users u ON u.id = n.user_id ORDER BY n.id DESC LIMIT 5", array($user['id']));

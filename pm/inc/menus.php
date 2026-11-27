@@ -52,7 +52,7 @@ function pm_menus() {
             $item('角色管理', 'gstxl.png', 'sys_role'),
             $item('職位管理', '26.png', 'position'),
             $item('用戶管理', 'grtxl.png', 'sys_user'),
-            $item('文件審批設置', '24502_s.gif', 'sys_flow'),
+            $item('流程模板', '24502_s.gif', 'sys_flow'),
             $item('注冊管理', 'grtxl.png', 'sys_reg'),
             $item('積分管理', '30.png', 'sys_credit'),
             $item('消息發布', 'msg.gif', 'notice'),

@@ -1,6 +1,6 @@
 <?php
 /** 工程日曆（參考 project-approval/calendar.php：月視圖 + 當日事件 + 關注/節點/材料/人員/計劃標記） */
-$projects = db_rows('SELECT id, code, name FROM pm_projects ORDER BY id');
+$projects = db_rows('SELECT p.id, p.code, p.name FROM pm_projects p WHERE ' . project_scope_sql('p.id') . ' ORDER BY p.id');
 ?>
 <div class="easyui-layout pm-cal" fit="true" border="false" id="<?php echo $uid; ?>_box">
     <div region="center" border="false" style="padding:6px;">

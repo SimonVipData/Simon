@@ -241,6 +241,11 @@ var PM = {
             title: opt.title, width: opt.width || 560, height: opt.height || 'auto', modal: true, resizable: true, buttons: buttons,
             onClose: function () { $d.dialog('destroy'); }
         });
+        var maxH = $(window).height() - 40;
+        if (!opt.height && $d.closest('.panel.window').outerHeight() > maxH) {
+            $d.dialog('resize', {height: maxH});
+            $d.dialog('center');
+        }
         return $d;
     },
     optText: function (options, v) {
@@ -296,6 +301,57 @@ var PM = {
                 if (ordered) { $order = $('<div class="pm-form-hint" style="color:#1F5FA8;"/>').appendTo($el); draw(); }
             },
             getValue: function () { return picked.join(','); }
+        };
+    },
+    /** 審批步驟編輯（表單 custom 字段）：roles=[{id,name}]，steps=[{id,name}]；返回 {render,getValue,set} */
+    stepEditor: function (roles, steps) {
+        var $ul, $sel;
+        steps = steps || [];
+        function draw() {
+            if (!$ul) return;
+            $ul.empty();
+            $.each(steps, function (i, s) {
+                var $li = $('<li/>').appendTo($ul);
+                $('<span class="pm-step-no"/>').text('第 ' + (i + 1) + ' 步（' + (i === 0 ? '提交' : '審批') + '）').appendTo($li);
+                $('<span/>').text(s.name).appendTo($li);
+                var $ops = $('<span class="pm-step-ops"/>').appendTo($li);
+                if (i > 0) $('<a>上移</a>').click(function () { steps.splice(i - 1, 0, steps.splice(i, 1)[0]); draw(); }).appendTo($ops);
+                if (i < steps.length - 1) $('<a>下移</a>').click(function () { steps.splice(i + 1, 0, steps.splice(i, 1)[0]); draw(); }).appendTo($ops);
+                $('<a style="color:#d93025">移除</a>').click(function () { steps.splice(i, 1); draw(); }).appendTo($ops);
+            });
+            if (!steps.length) $('<li style="color:#999;border-style:dashed;background:#fff;">尚未添加角色</li>').appendTo($ul);
+            $sel.empty();
+            $.each(roles, function (i, r) {
+                if (!$.grep(steps, function (s) { return s.id === r.id; }).length) $('<option/>').val(r.id).text(r.name).appendTo($sel);
+            });
+        }
+        return {
+            render: function ($el) {
+                $ul = $('<ul class="pm-steps"/>').appendTo($el);
+                $sel = $('<select style="width:200px;height:28px;margin:0 6px 0 0;padding:3px 6px;"/>').appendTo($el);
+                $('<a class="btn btn-small btn-primary">添加到末尾</a>').click(function () {
+                    var id = parseInt($sel.val(), 10), r = $.grep(roles, function (x) { return x.id === id; })[0];
+                    if (r) { steps.push({id: r.id, name: r.name}); draw(); }
+                }).appendTo($el);
+                $('<div class="pm-form-hint"/>').text('第 1 步為提交角色，之後按列表順序逐級審批；可用上移/下移調整先後。').appendTo($el);
+                draw();
+            },
+            getValue: function () { return $.map(steps, function (s) { return s.id; }).join(','); },
+            set: function (list) { steps = list; draw(); }
+        };
+    },
+    /** 勾選框組（表單 custom 字段）：options=[{value,text}]，selected 為值數組；返回 {render,getValue} */
+    checkGroup: function (options, selected) {
+        var picked = $.map(selected || [], function (x) { return String(x); }), $box;
+        return {
+            render: function ($el) {
+                $box = $('<div class="pm-user-pick"/>').appendTo($el);
+                $.each(options, function (i, o) {
+                    var $c = $('<input type="checkbox" style="margin:0 4px 0 0;"/>').val(o.value).prop('checked', $.inArray(String(o.value), picked) >= 0);
+                    $('<label/>').append($c).append(document.createTextNode(o.text)).appendTo($box);
+                });
+            },
+            getValue: function () { return $box.find('input:checked').map(function () { return this.value; }).get().join(','); }
         };
     },
     docStatus: function (v, row) {

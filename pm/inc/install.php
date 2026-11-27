@@ -141,11 +141,21 @@ function pm_schema() {
         "CREATE TABLE IF NOT EXISTS `pm_disk` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `space` VARCHAR(10) NOT NULL DEFAULT 'personal', `parent_id` INT UNSIGNED NOT NULL DEFAULT 0, `is_dir` TINYINT NOT NULL DEFAULT 0, `name` VARCHAR(200) NOT NULL DEFAULT '', `remark` VARCHAR(255) NOT NULL DEFAULT '', `size` BIGINT NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_parent` (`space`, `parent_id`), KEY `idx_user` (`user_id`)) $t",
         // 論壇付費記錄：kind = view 查看貼子 / file 下載附件；amount 為支付的積分（分鐘）
         "CREATE TABLE IF NOT EXISTS `pm_forum_pays` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `thread_id` INT UNSIGNED NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `kind` VARCHAR(4) NOT NULL DEFAULT 'view', `amount` INT NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `uk_fpay` (`thread_id`, `user_id`, `kind`)) $t",
+        // 流程模板：新建工程時可選模板自動填充審批步驟
+        "CREATE TABLE IF NOT EXISTS `pm_flow_tpls` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(100) NOT NULL DEFAULT '', `remark` VARCHAR(255) NOT NULL DEFAULT '', `sort` INT NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`)) $t",
+        "CREATE TABLE IF NOT EXISTS `pm_flow_tpl_steps` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `tpl_id` INT UNSIGNED NOT NULL DEFAULT 0, `step_no` INT NOT NULL DEFAULT 0, `role_id` INT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (`id`), KEY `idx_fts_tpl` (`tpl_id`, `step_no`)) $t",
+        // 文件分類：審批類型、專業分類
+        "CREATE TABLE IF NOT EXISTS `pm_doc_types` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `code` VARCHAR(20) NOT NULL DEFAULT '', `name` VARCHAR(50) NOT NULL DEFAULT '', `name_en` VARCHAR(100) NOT NULL DEFAULT '', `remark` VARCHAR(255) NOT NULL DEFAULT '', `sort` INT NOT NULL DEFAULT 0, PRIMARY KEY (`id`), UNIQUE KEY `uk_dtype_code` (`code`)) $t",
+        "CREATE TABLE IF NOT EXISTS `pm_disciplines` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `code` VARCHAR(20) NOT NULL DEFAULT '', `name` VARCHAR(50) NOT NULL DEFAULT '', `remark` VARCHAR(255) NOT NULL DEFAULT '', `sort` INT NOT NULL DEFAULT 0, PRIMARY KEY (`id`), UNIQUE KEY `uk_disc_code` (`code`)) $t",
+        // 用戶所屬工程（普通用戶）
+        "CREATE TABLE IF NOT EXISTS `pm_user_projects` (`user_id` INT UNSIGNED NOT NULL, `project_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`user_id`, `project_id`), KEY `idx_up_project` (`project_id`)) $t",
+        // 文件編號流水號：prefix = 工程英文名-審批類型，擬稿即占號
+        "CREATE TABLE IF NOT EXISTS `pm_doc_seq` (`prefix` VARCHAR(150) NOT NULL, `last_no` INT NOT NULL DEFAULT 0, PRIMARY KEY (`prefix`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_meta` (`k` VARCHAR(50) NOT NULL, `v` VARCHAR(255) NOT NULL DEFAULT '', PRIMARY KEY (`k`)) $t",
     );
 }
 
-define('PM_SCHEMA_VER', '5');
+define('PM_SCHEMA_VER', '6');
 
 /** 首次訪問建表並寫入初始數據；之後按版本做增量升級 */
 function pm_install_if_needed() {
@@ -181,6 +191,24 @@ function pm_migrate() {
     foreach (array('pay_view', 'pay_file') as $name) {
         if (!isset($cols[$name])) db()->exec("ALTER TABLE pm_forum_threads ADD COLUMN `$name` INT NOT NULL DEFAULT 0");
     }
+    // 工程：英文名、年度流水號、工程審批流程
+    pm_add_cols('pm_projects', array(
+        'name_en' => "VARCHAR(100) NOT NULL DEFAULT ''", 'code_year' => 'INT NOT NULL DEFAULT 0', 'code_seq' => 'INT NOT NULL DEFAULT 0',
+        'flow_id' => 'INT UNSIGNED NOT NULL DEFAULT 0',
+    ));
+    db()->exec('ALTER TABLE pm_projects MODIFY `code` VARCHAR(100) NOT NULL');
+    // 工程文件：審批類型、專業分類、版本、封面
+    pm_add_cols('pm_docs', array(
+        'type_code' => "VARCHAR(20) NOT NULL DEFAULT ''", 'disc_code' => "VARCHAR(20) NOT NULL DEFAULT ''",
+        'base_no' => "VARCHAR(150) NOT NULL DEFAULT ''", 'version' => "VARCHAR(4) NOT NULL DEFAULT 'A'",
+        'ver_src' => 'TINYINT NOT NULL DEFAULT 0', 'parent_id' => 'INT UNSIGNED NOT NULL DEFAULT 0',
+        'is_latest' => 'TINYINT NOT NULL DEFAULT 1', 'cover' => 'MEDIUMTEXT NULL',
+    ));
+    db()->exec('ALTER TABLE pm_docs MODIFY `doc_no` VARCHAR(160) NOT NULL');
+    if (!db_val("SELECT v FROM pm_meta WHERE k = 'seed6'")) {
+        pm_seed_v6();
+        db_q("REPLACE INTO pm_meta (k, v) VALUES ('seed6', '1')");
+    }
     $now = now();
     // 超級管理員角色與 xadmin 帳號
     $superId = db_val("SELECT id FROM pm_roles WHERE type = 'super' ORDER BY id LIMIT 1");
@@ -206,6 +234,56 @@ function pm_migrate() {
         db_q("REPLACE INTO pm_meta (k, v) VALUES ('seed3', '1')");
     }
     db_q("REPLACE INTO pm_meta (k, v) VALUES ('schema', ?)", array(PM_SCHEMA_VER));
+}
+
+function pm_add_cols($table, $add) {
+    $cols = array();
+    foreach (db_rows("SHOW COLUMNS FROM `$table`") as $c) $cols[$c['Field']] = true;
+    foreach ($add as $name => $def) {
+        if (!isset($cols[$name])) db()->exec("ALTER TABLE `$table` ADD COLUMN `$name` $def");
+    }
+}
+
+/** 第六期：文件分類初始數據、現有審批設置轉為工程流程與模板、現有普通用戶歸屬現有工程 */
+function pm_seed_v6() {
+    $now = now();
+    if (!db_val('SELECT COUNT(*) FROM pm_doc_types')) {
+        $types = array(
+            array('RFI', '信息請求', 'Request for Information'), array('MST', '方案報審', 'Method Statement'),
+            array('MAT', '材料報審', 'Materials Approval Form'), array('RSI', '工序驗收', 'Request for Site Inspection'),
+            array('TST', '測試報告', 'Test Report'), array('VAF', '設計變更', 'Variation Approval Form'),
+            array('DWG', '圖紙報審', 'Drawing Submission'), array('RIN', '工序見證', 'Request for Inspection Witness'),
+        );
+        foreach ($types as $i => $t) db_insert('pm_doc_types', array('code' => $t[0], 'name' => $t[1], 'name_en' => $t[2], 'sort' => $i + 1));
+    }
+    if (!db_val('SELECT COUNT(*) FROM pm_disciplines')) {
+        $discs = array(array('EVL', '弱電'), array('PD', '給排水'), array('EL', '機電'), array('FO', '建築'), array('BR', '結構'),
+            array('HVAC', '冷氣通風'), array('FS', '消防'), array('CCTV', '監控'), array('OT', '其它'));
+        foreach ($discs as $i => $d) db_insert('pm_disciplines', array('code' => $d[0], 'name' => $d[1], 'sort' => $i + 1));
+    }
+    foreach (db_rows('SELECT id, code, name_en, flow_id FROM pm_projects') as $p) {
+        $data = array();
+        if ($p['name_en'] === '') $data['name_en'] = preg_replace('/[^A-Za-z0-9\-]/', '', $p['code']) ?: 'P' . $p['id'];
+        if (!(int)$p['flow_id']) {
+            $fid = (int)db_val('SELECT id FROM pm_flows WHERE project_id = ? ORDER BY status DESC, id LIMIT 1', array($p['id']));
+            if ($fid) $data['flow_id'] = $fid;
+        }
+        if ($data) db_update('pm_projects', $data, $p['id']);
+    }
+    if (!db_val('SELECT COUNT(*) FROM pm_flow_tpls')) {
+        $seen = array();
+        foreach (db_rows('SELECT id, name FROM pm_flows ORDER BY id') as $f) {
+            $roles = array_map('intval', array_column(db_rows('SELECT role_id FROM pm_flow_steps WHERE flow_id = ? ORDER BY step_no', array($f['id'])), 'role_id'));
+            $key = implode(',', $roles);
+            if (count($roles) < 2 || isset($seen[$key])) continue;
+            $seen[$key] = true;
+            $tid = db_insert('pm_flow_tpls', array('name' => $f['name'], 'sort' => count($seen), 'created_at' => $now));
+            foreach ($roles as $i => $rid) db_insert('pm_flow_tpl_steps', array('tpl_id' => $tid, 'step_no' => $i + 1, 'role_id' => $rid));
+        }
+    }
+    db_q("UPDATE pm_docs SET base_no = doc_no WHERE base_no = ''");
+    db_q("INSERT IGNORE INTO pm_user_projects (user_id, project_id)
+          SELECT u.id, p.id FROM pm_users u JOIN pm_roles r ON r.id = u.role_id AND r.type = 'user' CROSS JOIN pm_projects p");
 }
 
 function pm_seed_v2() {

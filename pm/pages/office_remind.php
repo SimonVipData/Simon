@@ -3,7 +3,7 @@
 $docs = $admin ? array() : db_rows(
     "SELECT d.id, d.doc_no, d.title, d.submitted_at, COALESCE(NULLIF(u.real_name, ''), u.username) AS creator_name
      FROM pm_docs d JOIN pm_doc_steps s ON s.doc_id = d.id AND s.round = d.round LEFT JOIN pm_users u ON u.id = d.creator_id
-     WHERE d.status = ? AND s.status = ? AND s.role_id = ? ORDER BY d.id DESC LIMIT 50", array(DOC_PENDING, STEP_CURRENT, $user['role_id']));
+     WHERE d.status = ? AND s.status = ? AND s.role_id = ? AND " . project_scope_sql('d.project_id') . " ORDER BY d.id DESC LIMIT 50", array(DOC_PENDING, STEP_CURRENT, $user['role_id']));
 $apprs = db_rows(
     "SELECT a.id, a.type, a.appr_no, a.title, a.submitted_at, COALESCE(NULLIF(u.real_name, ''), u.username) AS creator_name
      FROM pm_apprs a JOIN pm_appr_steps s ON s.appr_id = a.id LEFT JOIN pm_users u ON u.id = a.user_id
