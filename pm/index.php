@@ -88,6 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="login-footer"><?php echo APP_COPYRIGHT; ?></div>
     </div>
 </div>
-<script type="text/javascript" charset="utf-8" src="resource/js/pm.lang.js"></script>
+<script type="text/javascript" charset="utf-8" src="resource/js/pm.lang.js?v=<?php echo @filemtime(__DIR__ . '/resource/js/pm.lang.js'); ?>"></script>
 </body>
 </html>

@@ -214,6 +214,6 @@ function reg_label($k, $mode) {
     if (input.value !== '') check();
 })();
 </script>
-<script type="text/javascript" charset="utf-8" src="resource/js/pm.lang.js"></script>
+<script type="text/javascript" charset="utf-8" src="resource/js/pm.lang.js?v=<?php echo @filemtime(__DIR__ . '/resource/js/pm.lang.js'); ?>"></script>
 </body>
 </html>
