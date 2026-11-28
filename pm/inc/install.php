@@ -156,11 +156,13 @@ function pm_schema() {
         "CREATE TABLE IF NOT EXISTS `pm_doc_file_logs` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `src` VARCHAR(10) NOT NULL DEFAULT '', `ref_id` INT UNSIGNED NOT NULL DEFAULT 0, `doc_id` INT UNSIGNED NOT NULL DEFAULT 0, `old_name` VARCHAR(255) NOT NULL DEFAULT '', `new_name` VARCHAR(255) NOT NULL DEFAULT '', `upload_name` VARCHAR(255) NOT NULL DEFAULT '', `old_size` INT UNSIGNED NOT NULL DEFAULT 0, `new_size` INT UNSIGNED NOT NULL DEFAULT 0, `backup_path` VARCHAR(500) NOT NULL DEFAULT '', `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, PRIMARY KEY (`id`), KEY `idx_dfl_ref` (`src`, `ref_id`)) $t",
         // 工作清單：followers 為跟進人員 ID（逗號分隔，空 = 所有用戶可跟進）；上傳閉合附件即閉合
         "CREATE TABLE IF NOT EXISTS `pm_worklist` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `category` VARCHAR(50) NOT NULL DEFAULT '', `content` TEXT NULL, `followers` VARCHAR(500) NOT NULL DEFAULT '', `close_desc` TEXT NULL, `close_user_id` INT UNSIGNED NOT NULL DEFAULT 0, `closed_at` DATETIME NULL, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_wl_user` (`user_id`)) $t",
+        // 天氣預測分屏牆設置：user_id = 0 為管理員設定的默認設置
+        "CREATE TABLE IF NOT EXISTS `pm_wx_cfg` (`user_id` INT UNSIGNED NOT NULL, `cfg` TEXT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`user_id`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_meta` (`k` VARCHAR(50) NOT NULL, `v` VARCHAR(255) NOT NULL DEFAULT '', PRIMARY KEY (`k`)) $t",
     );
 }
 
-define('PM_SCHEMA_VER', '9');
+define('PM_SCHEMA_VER', '10');
 
 /** 首次訪問建表並寫入初始數據；之後按版本做增量升級 */
 function pm_install_if_needed() {

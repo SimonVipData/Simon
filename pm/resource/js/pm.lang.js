@@ -42,6 +42,8 @@ var PMLang = (function () {
         '內部審批': 'Internal Approval',
         '網盤資料': 'Cloud Drive',
         '工程論壇': 'Engineering Forum',
+        '工程輔助': 'Engineering Aids',
+        '天氣預測': 'Weather Forecast',
         '系統管理': 'System Admin',
         '個人中心': 'Personal Center',
         '工程信息': 'Projects',

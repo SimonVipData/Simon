@@ -43,6 +43,9 @@ function pm_menus() {
             $item('共享文件', '32.png', 'disk_share'),
             $item('公司文件', '32.png', 'disk_company'),
         )),
+        array('id' => 'aux', 'title' => '工程輔助', 'icon' => 'resource/images/menu/sjx.png', 'children' => array(
+            $item('天氣預測', '25008_s.gif', 'weather'),
+        )),
         array('id' => 'forum', 'title' => '工程論壇', 'icon' => 'resource/images/menu/xtgg.png', 'children' => array(
             $item('工程論壇', 'xtgg.png', 'forum'),
         )),
@@ -94,6 +97,7 @@ function pm_pages() {
         'office_mail' => array('office_mail', false), 'mail_view' => array('mail_view', false),
         'office_vote' => array('office_vote', false), 'vote_view' => array('vote_view', false),
         'work_calendar' => array('work_calendar', false), 'worklist' => array('worklist', false),
+        'weather' => array('weather', false),
         'appr_inquiry' => array('appr_list', false), 'appr_expense' => array('appr_list', false), 'appr_matter' => array('appr_list', false),
         'appr_view' => array('appr_view', false),
         'forum' => array('forum', false), 'forum_thread' => array('forum_thread', false),

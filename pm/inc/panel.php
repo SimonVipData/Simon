@@ -10,6 +10,7 @@ function panel_menu_defs() {
         'material' => '材料管理', 'sub' => '分包管理', 'labor' => '勞工管理',
         'appr_inquiry' => '詢價審批', 'appr_expense' => '費用審批', 'appr_matter' => '事項審批',
         'disk_personal' => '個人文件', 'disk_share' => '共享文件', 'disk_company' => '公司文件', 'forum' => '工程論壇',
+        'weather' => '天氣預測',
     );
 }
 

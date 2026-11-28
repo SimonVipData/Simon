@@ -12,6 +12,7 @@ $menuGroups = array(
     '工程實務' => array('note', 'todo', 'worklist', 'work_calendar', 'customer', 'material', 'sub', 'labor'),
     '內部審批' => array('appr_inquiry', 'appr_expense', 'appr_matter'),
     '網盤資料' => array('disk_personal', 'disk_share', 'disk_company'),
+    '工程輔助' => array('weather'),
     '工程論壇' => array('forum'),
 );
 $menuNames = panel_menu_defs();
