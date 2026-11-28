@@ -1,9 +1,10 @@
 <?php
-/** 工作清單：所有用戶可登記工作；跟進人員上傳閉合附件閉合；只有創建人可刪除 */
+/** 工作清單：所有用戶可按項目登記工作；跟進人員上傳閉合附件閉合；創建人、admin、xadmin 可刪除 */
 ?>
 <div id="<?php echo $uid; ?>_tb" class="search-div">
     <form onsubmit="return datagridSearch(this,'<?php echo $uid; ?>_dg');">
         <div class="search-content">
+            <span><label>項目：</label><select name="project_id" id="<?php echo $uid; ?>_proj" style="width:200px;"><option value="">全部項目</option></select></span>
             <span><label>關鍵字：</label><input type="text" name="keyword" style="width:160px;" placeholder="分類 / 描述"/></span>
             <span><label>狀態：</label><select name="state" style="width:100px;"><option value="">全部</option><option value="open">未閉合</option><option value="closed">已閉合</option></select></span>
             <span><label>範圍：</label><select name="mine" style="width:120px;"><option value="">全部記錄</option><option value="created">我創建的</option><option value="follow">我可跟進的</option></select></span>
@@ -32,6 +33,7 @@ $(function(){
         url: api + '?act=list', rownumbers: true,
         columns: [[
             {field: 'creator_name', title: '創建人', width: 80, align: 'center'},
+            {field: 'project_name', title: '項目', width: 150, formatter: function(v, row){ return v ? PM.esc((row.project_code ? row.project_code + ' ' : '') + v) : ''; }},
             {field: 'category', title: '分類', width: 90, align: 'center'},
             {field: 'content', title: '工作描述', width: 240, formatter: brief},
             {field: 'files_desc', title: '描述附件', width: 150, formatter: PM.fileLinks},
@@ -47,12 +49,31 @@ $(function(){
     function opts(cb) {
         $.getJSON(api, {act: 'opts'}, function(o){ if (o && o.ok) cb(o); else PM.alert(o && o.msg ? o.msg : '讀取失敗'); });
     }
+    function projText(p){ return (p.code ? p.code + ' ' : '') + p.name; }
+    opts(function(o){ $.each(o.projects, function(i, p){ $('<option/>').val(p.id).text(projText(p)).appendTo(U + '_proj'); }); });
     function edit(row) {
         if (row && !row.is_owner) return PM.alert('只有創建人可以修改工作描述');
         opts(function(o){
-            var picker = PM.userPicker(o.users, row ? row.follower_ids : []), $cat;
+            if (!o.projects.length) return PM.alert('您沒有所屬項目，不能登記工作');
+            var picker, $cat, $proj, $fw, sel = row ? $.map(row.follower_ids, String) : [];
+            function drawPicker() {
+                if (picker) sel = picker.getValue() ? picker.getValue().split(',') : [];
+                var pid = parseInt($proj.val(), 10) || 0;
+                var us = $.grep(o.users, function(u){ return u.all || $.inArray(pid, u.pids) >= 0; });
+                var ok = $.map(us, function(u){ return String(u.id); });
+                picker = PM.userPicker(us, $.grep(sel, function(id){ return $.inArray(id, ok) >= 0; }));
+                $fw.empty(); picker.render($fw);
+            }
             PM.form({title: (row ? '修改' : '新增') + '工作', width: 680, data: row || {}, url: api + '?act=save', extra: {id: row ? row.id : 0},
                 fields: [
+                    {name: 'project_id', label: '項目', type: 'custom', required: true, render: function($el){
+                        $proj = $('<select style="width:100%;"/>').appendTo($el);
+                        if (!row || !row.project_id) $('<option value="">請選擇項目</option>').appendTo($proj);
+                        $.each(o.projects, function(i, p){ $('<option/>').val(p.id).text(projText(p)).appendTo($proj); });
+                        if (row && row.project_id) $proj.val(String(row.project_id));
+                        else if (o.projects.length === 1) $proj.val(String(o.projects[0].id));
+                        $proj.change(drawPicker);
+                    }, getValue: function(){ return $proj.val() || ''; }},
                     {name: 'category', label: '分類', type: 'custom', render: function($el){
                         var lid = U.substr(1) + '_cats';
                         $cat = $('<input type="text" maxlength="50" autocomplete="off" placeholder="可輸入或從已有分類中選擇"/>').attr('list', lid).val(row ? row.category : '').appendTo($el);
@@ -61,8 +82,8 @@ $(function(){
                     }, getValue: function(){ return $.trim($cat.val()); }},
                     {name: 'content', label: '工作描述', type: 'textarea', rows: 5, required: true},
                     {name: 'desc', label: '描述附件', type: 'files', files: row ? row.files_desc : []},
-                    {name: 'followers', label: '跟進人員', type: 'custom', render: picker.render, getValue: picker.getValue,
-                        hint: '不勾選則所有用戶都可以跟進閉合'}
+                    {name: 'followers', label: '跟進人員', type: 'custom', render: function($el){ $fw = $('<div/>').appendTo($el); drawPicker(); },
+                        getValue: function(){ return picker ? picker.getValue() : ''; }, hint: '只列出該項目的用戶；不勾選則該項目所有用戶都可以跟進閉合'}
                 ],
                 onOk: function(){ PM.reload(dg); }});
         });
@@ -79,7 +100,9 @@ $(function(){
     }
     function view(row) {
         PM.detail('工作詳情', [
-            {name: 'creator_name', label: '創建人'}, {name: 'category', label: '分類'}, {name: 'content', label: '工作描述'},
+            {name: 'creator_name', label: '創建人'},
+            {name: 'project_name', label: '項目', html: function(r){ return r.project_name ? PM.esc((r.project_code ? r.project_code + ' ' : '') + r.project_name) : ''; }},
+            {name: 'category', label: '分類'}, {name: 'content', label: '工作描述'},
             {name: 'desc', label: '描述附件', type: 'files', files: row.files_desc}, {name: 'created_at', label: '創建時間'},
             {name: 'follower_names', label: '跟進人員'}, {name: 'close_desc', label: '閉合描述'},
             {name: 'close', label: '閉合附件', type: 'files', files: row.files_close},
@@ -94,7 +117,7 @@ $(function(){
     $(U + '_del').click(function(){
         var r = PM.selected(dg);
         if (!r) return;
-        if (!r.is_owner) return PM.alert('只有創建人才可以刪除記錄');
+        if (!r.can_delete) return PM.alert('只有創建人、admin、xadmin 才可以刪除記錄');
         PM.confirm('確定刪除所選工作記錄嗎？', function(){ PM.post(api + '?act=delete', {id: r.id}, function(){ PM.reload(dg); }); });
     });
     $(U + '_reload').click(function(){ PM.reload(dg); });

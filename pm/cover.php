@@ -28,21 +28,25 @@ if (!$steps) {
 $stepText = array(STEP_WAIT => '', STEP_CURRENT => '', STEP_PASS => '同意 Approved', STEP_REJECT => '駁回 Rejected', STEP_SUBMIT => '');
 $titleEn = $doc['type_en'] !== null && $doc['type_en'] !== '' ? $doc['type_en'] : 'Document Submission';
 $titleCn = $doc['type_name'] !== null && $doc['type_name'] !== '' ? $doc['type_name'] : '工程文件報審';
+$hdr = cover_header_file($doc['project_id']);
 $conclusion = array(DOC_APPROVED => '批准 Approved', DOC_REJECTED => '駁回 Rejected, 請修改後重新申報 Revise and Resubmit');
 ?><!DOCTYPE html>
 <html><head><meta charset="utf-8"><title><?php echo h($doc['doc_no']); ?> 封面</title>
 <style>
 body{font-family:"Microsoft JhengHei","PMingLiU","SimSun",Arial,sans-serif;font-size:12px;color:#000;margin:0;background:#eee;}
-.page{width:190mm;min-height:270mm;margin:10px auto;background:#fff;padding:10mm;box-sizing:border-box;}
+.page{width:210mm;min-height:297mm;margin:10px auto;background:#fff;padding:10mm;box-sizing:border-box;box-shadow:0 0 6px rgba(0,0,0,.25);}
+.hdr{margin:0 0 6px;text-align:center;} .hdr img{display:block;width:100%;max-height:45mm;object-fit:contain;}
 h1{font-size:18px;text-align:center;margin:0 0 4px;} h2{font-size:14px;text-align:center;margin:0 0 10px;font-weight:normal;}
 table{width:100%;border-collapse:collapse;margin-bottom:-1px;} td,th{border:1px solid #000;padding:4px 6px;vertical-align:top;}
 th{background:#f2f2f2;font-weight:normal;text-align:left;width:22%;white-space:nowrap;} .ck{display:inline-block;margin-right:10px;white-space:nowrap;}
 .sec{background:#dde6f0;font-weight:bold;} .tall{height:60px;} .sign{height:34px;}
 .bar{text-align:center;margin:10px;} .bar button{font-size:14px;padding:4px 18px;}
-@media print{body{background:#fff;} .page{margin:0;width:auto;min-height:0;padding:0;} .bar{display:none;} @page{size:A4;margin:10mm;}}
+@media print{body{background:#fff;} .page{margin:0;width:210mm;min-height:0;padding:10mm;box-shadow:none;} .bar{display:none;} @page{size:A4 portrait;margin:0;}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 </style></head><body>
 <div class="bar"><button onclick="window.print()">打印 / 另存為 PDF</button></div>
 <div class="page">
+<?php if ($hdr): ?><div class="hdr"><img src="api/file.php?id=<?php echo (int)$hdr['id']; ?>&amp;inline=1" alt="<?php echo h($hdr['file_name']); ?>"/></div><?php endif; ?>
 <h1><?php echo h($titleEn . ' (' . $doc['type_code'] . ')'); ?> - <?php echo h($titleCn); ?></h1>
 <h2><?php echo h($doc['project_name']); ?><?php if ($doc['project_en'] !== ''): ?> / <?php echo h($doc['project_en']); ?><?php endif; ?></h2>
 <table>

@@ -31,7 +31,11 @@ if ($f) {
             $allow = $acc['file'];
         }
     } elseif ($m === 'worklist') {
-        $allow = menu_on('worklist') && (bool)db_val('SELECT 1 FROM pm_worklist WHERE id = ?', array($rid));
+        $wp = db_val('SELECT project_id FROM pm_worklist WHERE id = ?', array($rid));
+        $allow = menu_on('worklist') && $wp !== null && ((int)$wp === 0 || can_see_project($wp));
+    } elseif ($m === 'cover_header') {
+        // 項目文件封面頁眉圖片：ref_id 為工程 ID，0 為默認頁眉
+        $allow = $rid === 0 || can_see_project($rid);
     } elseif ($m === 'event') {
         require_once __DIR__ . '/../inc/panel.php';
         $allow = !cal_own_only() || (int)db_val('SELECT user_id FROM pm_events WHERE id = ?', array($rid)) === (int)$me['id'];

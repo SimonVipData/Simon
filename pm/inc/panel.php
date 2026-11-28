@@ -81,3 +81,10 @@ function lang_enabled() {
 function lang_script() {
     return '<script type="text/javascript">var PM_LANGS = ' . json_encode(lang_enabled()) . ';</script>';
 }
+
+/** 項目文件封面頁眉圖片（pm_files：module=cover_header，ref_id=工程 ID，0 為默認）；工程未設置時用默認頁眉 */
+function cover_header_file($pid) {
+    $f = db_row("SELECT id, ref_id, file_name FROM pm_files WHERE module = 'cover_header' AND ref_id IN (?, 0) ORDER BY ref_id DESC, id DESC LIMIT 1", array((int)$pid));
+    return $f ? $f : null;
+}
+

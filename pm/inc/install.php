@@ -160,7 +160,7 @@ function pm_schema() {
     );
 }
 
-define('PM_SCHEMA_VER', '8');
+define('PM_SCHEMA_VER', '9');
 
 /** 首次訪問建表並寫入初始數據；之後按版本做增量升級 */
 function pm_install_if_needed() {
@@ -209,6 +209,8 @@ function pm_migrate() {
         'ver_src' => 'TINYINT NOT NULL DEFAULT 0', 'parent_id' => 'INT UNSIGNED NOT NULL DEFAULT 0',
         'is_latest' => 'TINYINT NOT NULL DEFAULT 1', 'cover' => 'MEDIUMTEXT NULL',
     ));
+    // 工作清單所屬項目（0 = 舊記錄，未指定項目）
+    pm_add_cols('pm_worklist', array('project_id' => 'INT UNSIGNED NOT NULL DEFAULT 0'));
     db()->exec('ALTER TABLE pm_docs MODIFY `doc_no` VARCHAR(160) NOT NULL');
     db()->exec('ALTER TABLE pm_docs MODIFY `file_path` VARCHAR(500) NOT NULL DEFAULT \'\'');
     if (!db_val("SELECT v FROM pm_meta WHERE k = 'seed6'")) {

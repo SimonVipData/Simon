@@ -67,6 +67,14 @@ $menuNames = panel_menu_defs();
     </table>
 </form>
 </div>
+<div title="項目文件頁眉">
+    <div id="<?php echo $uid; ?>_hd_tb" class="search-div"><div class="search-toolbar"><span style="float:left;">
+        <a class="easyui-linkbutton" icon="icon-add" plain="true" data-h="up">上傳 / 更換頁眉圖片</a>
+        <a class="easyui-linkbutton" icon="icon-remove" plain="true" data-h="del">刪除頁眉圖片</a>
+        <a class="easyui-linkbutton" icon="icon-reload" plain="true" data-h="reload">刷新</a>
+    </span><span style="float:right;color:#888;line-height:28px;padding-right:8px;">打印審批文件封面（A4）時，頁眉圖片顯示在頂部並鋪滿頁寬；項目未設置時使用默認頁眉，都沒有則不顯示頁眉</span></div></div>
+    <table id="<?php echo $uid; ?>_hd_dg" toolbar="#<?php echo $uid; ?>_hd_tb"></table>
+</div>
 <?php foreach (array('type' => '審批類型', 'disc' => '專業分類') as $k => $t): ?>
 <div title="工程設置 - 文件分類：<?php echo $t; ?>">
     <div id="<?php echo $uid . '_' . $k; ?>_tb" class="search-div"><div class="search-toolbar"><span style="float:left;">
@@ -89,6 +97,34 @@ $(function(){
         if (k === 'type') cols.push({field: 'name_en', title: '英文名稱（封面標題）', width: 220});
         cols.push({field: 'remark', title: '說明', width: 220}, {field: 'doc_count', title: '已用文件數', width: 80, align: 'center'});
         PM.grid(U + '_' + k + '_dg', {url: 'api/dict.php?act=list&kind=' + k, pagination: false, columns: [cols]});
+    });
+    var hd = U + '_hd_dg';
+    PM.grid(hd, {url: 'api/panel.php?act=header_list', pagination: false, nowrap: false, columns: [[
+        {field: 'code', title: '工程編號', width: 150},
+        {field: 'name', title: '工程名稱', width: 220},
+        {field: 'file_id', title: '頁眉圖片', width: 460, formatter: function(v){
+            return v ? '<a href="api/file.php?id=' + v + '&inline=1" target="_blank"><img src="api/file.php?id=' + v + '&inline=1" style="max-width:440px;max-height:60px;margin:3px 0;border:1px solid #ddd;"/></a>' : '<span style="color:#999">未設置</span>';
+        }},
+        {field: 'file_name', title: '圖片文件', width: 160},
+        {field: 'user_name', title: '上傳人', width: 80, align: 'center'},
+        {field: 'uploaded_at', title: '上傳時間', width: 140, align: 'center'}
+    ]]});
+    $(U + '_tabs').on('click', 'a[data-h]', function(){
+        var a = $(this).data('h');
+        if (a === 'reload') return PM.reload(hd);
+        var r = PM.selected(hd);
+        if (!r) return;
+        var title = r.id ? (r.code + ' ' + r.name) : '默認頁眉';
+        if (a === 'up') {
+            PM.form({title: '上傳頁眉圖片 - ' + title, width: 560, url: 'api/panel.php?act=header_upload', extra: {project_id: r.id},
+                fields: [{name: 'img', label: '頁眉圖片', type: 'custom', render: function($el){
+                    $('<input type="file" name="f_img[]" accept=".jpg,.jpeg,.png,.gif"/>').appendTo($el);
+                }, getValue: function(){ return ''; }, hint: 'JPG / PNG / GIF，不超過 5MB；建議寬高比約 6:1（例如 1800×300 像素），上傳後替換原有圖片'}],
+                onOk: function(){ PM.reload(hd); }});
+        } else if (a === 'del') {
+            if (!r.file_id) return PM.alert('該項目未設置頁眉圖片');
+            PM.confirm('確定刪除「' + title + '」的頁眉圖片嗎？', function(){ PM.post('api/panel.php?act=header_delete', {project_id: r.id}, function(){ PM.reload(hd); }); });
+        }
     });
     function dictEdit(k, row) {
         var fields = [{name: 'code', label: '代碼', required: true, placeholder: k === 'type' ? '例如：MAT' : '例如：FS'}, {name: 'name', label: '名稱', required: true}];
