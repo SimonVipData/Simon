@@ -1,6 +1,8 @@
 <?php
 /** 工程文件 API：創建、提交、按角色順序審批 */
 require_once __DIR__ . '/../inc/config.php';
+require_once __DIR__ . '/../inc/files.php';
+require_once __DIR__ . '/../inc/docfile.php';
 $act = param('act', 'list');
 
 function doc_allowed_ext() {
@@ -24,7 +26,7 @@ function doc_store_upload() {
 }
 
 function doc_remove_file($path) {
-    if ($path !== '' && preg_match('/^[0-9a-f_]+\.bin$/', $path) && is_file(UPLOAD_DIR . '/' . $path)) @unlink(UPLOAD_DIR . '/' . $path);
+    docf_unlink($path);
 }
 
 /** 文件編號：工程英文名-審批類型-三位流水號（擬稿即占號，需在事務內調用），返回 base_no */
@@ -47,7 +49,7 @@ function doc_next_ver($v) {
 }
 
 function doc_copy_file($path) {
-    if ($path === '' || !preg_match('/^[0-9a-f_]+\.bin$/', $path) || !is_file(UPLOAD_DIR . '/' . $path)) return '';
+    if (!docf_exists($path)) return '';
     $new = date('Ym') . '_' . bin2hex(random_bytes(16)) . '.bin';
     return @copy(UPLOAD_DIR . '/' . $path, UPLOAD_DIR . '/' . $new) ? $new : '';
 }
@@ -83,44 +85,27 @@ function doc_submit($docId, $me) {
             'comment' => $first ? ($round > 1 ? '重新提交審批' : '提交審批') : '', 'acted_at' => $first ? $now : null,
         ));
     }
-    db_update('pm_docs', array('status' => DOC_PENDING, 'current_step' => 2, 'round' => $round, 'submitted_at' => $now, 'updated_at' => $now, 'finished_at' => null), $docId);
-}
-
-function doc_tx($fn) {
-    $pdo = db();
-    $pdo->beginTransaction();
-    try {
-        $r = $fn();
-        $pdo->commit();
-        return $r;
-    } catch (PmError $e) {
-        $pdo->rollBack();
-        fail($e->getMessage());
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        throw $e;
+    $data = array('status' => DOC_PENDING, 'current_step' => 2, 'round' => $round, 'submitted_at' => $now, 'updated_at' => $now, 'finished_at' => null);
+    // 附件重命名為「文件編號 文件標題」，移到 工程編號/類型/專業/文件編號/提交角色/ 目錄
+    if (docf_exists($doc['file_path']) && strpos($doc['file_path'], 'docs/') !== 0) {
+        $ext = strtolower(pathinfo($doc['file_name'], PATHINFO_EXTENSION));
+        $data += docf_place(UPLOAD_DIR . '/' . $doc['file_path'], docf_dir($doc, $steps[0]['role_name']), $doc['doc_no'] . ' ' . $doc['title'], $ext, false);
     }
+    db_update('pm_docs', $data, $docId);
 }
 
-$me = null;
-if (in_array($act, array('list', 'get', 'todo_count', 'download', 'form_opts'), true)) {
-    api_guard(false, false);
-} else {
-    api_guard();
-}
-$me = current_user();
-$admin = is_admin();
-$scopeSql = project_scope_sql('d.project_id');
-
-if ($act === 'todo_count') {
-    json_out(array('ok' => true, 'count' => (int)db_val(
-        'SELECT COUNT(*) FROM pm_docs d JOIN pm_doc_steps s ON s.doc_id = d.id AND s.round = d.round
-         WHERE d.status = ? AND s.status = ? AND s.role_id = ? AND ' . $scopeSql, array(DOC_PENDING, STEP_CURRENT, $me['role_id']))));
+/** 文件的審批回覆附件：step_id => [ {id,name,size} ] */
+function doc_reply_files($docId) {
+    $map = array();
+    foreach (db_rows('SELECT id, step_id, file_name, file_size FROM pm_doc_files WHERE doc_id = ? ORDER BY id', array($docId)) as $r) {
+        $map[(int)$r['step_id']][] = array('id' => (int)$r['id'], 'name' => $r['file_name'], 'size' => (int)$r['file_size']);
+    }
+    return $map;
 }
 
-if ($act === 'list') {
-    list($limit, $offset) = page_args();
-    $where = array($scopeSql);
+/** 列表與導出共用的查詢條件 */
+function doc_list_where($me) {
+    $where = array(project_scope_sql('d.project_id'));
     $args = array();
     if (param_int('latest') === 1) $where[] = 'd.is_latest = 1';
     foreach (array('type_code', 'disc_code') as $k) {
@@ -148,12 +133,23 @@ if ($act === 'list') {
         $where[] = 'd.status = ?';
         $args[] = (int)$st;
     }
-    $w = implode(' AND ', $where);
+    // 創建時間、結束時間範圍
+    foreach (array('created' => 'd.created_at', 'finished' => 'd.finished_at') as $k => $col) {
+        $from = param($k . '_from');
+        $to = param($k . '_to');
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) { $where[] = "$col >= ?"; $args[] = $from . ' 00:00:00'; }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) { $where[] = "$col <= ?"; $args[] = $to . ' 23:59:59'; }
+    }
+    return array(implode(' AND ', $where), $args);
+}
+
+function doc_list_rows($w, $args, $limit, $offset) {
     $rows = db_rows("SELECT d.id, d.doc_no, d.title, d.doc_type, d.file_name, d.file_size, d.creator_id, d.status, d.round, d.created_at, d.submitted_at, d.finished_at,
                             d.project_id, d.type_code, d.disc_code, d.base_no, d.version, d.ver_src, d.is_latest, d.parent_id,
                             p.name AS project_name, p.name_en AS project_en, t.name AS type_name, c.name AS disc_name, f.name AS flow_name,
                             COALESCE(NULLIF(u.real_name, ''), u.username) AS creator_name,
-                            (SELECT s.role_name FROM pm_doc_steps s WHERE s.doc_id = d.id AND s.round = d.round AND s.status = " . STEP_CURRENT . " LIMIT 1) AS cur_role
+                            (SELECT s.role_name FROM pm_doc_steps s WHERE s.doc_id = d.id AND s.round = d.round AND s.status = " . STEP_CURRENT . " LIMIT 1) AS cur_role,
+                            (SELECT COUNT(*) FROM pm_doc_files df WHERE df.doc_id = d.id) AS reply_count
                      FROM pm_docs d
                      LEFT JOIN pm_projects p ON p.id = d.project_id
                      LEFT JOIN pm_flows f ON f.id = d.flow_id
@@ -165,9 +161,114 @@ if ($act === 'list') {
         $r['status_text'] = doc_status_text($r['status']);
         if ((int)$r['status'] !== DOC_PENDING) $r['cur_role'] = '';
         $r['ver_text'] = (int)$r['ver_src'] === 1 ? '駁回升版' : '初始版本';
+        $r['att_count'] = (int)$r['reply_count'] + ($r['file_name'] !== '' ? 1 : 0);
     }
     unset($r);
-    json_out(array('total' => (int)db_val("SELECT COUNT(*) FROM pm_docs d WHERE $w", $args), 'rows' => $rows));
+    return $rows;
+}
+
+function doc_tx($fn) {
+    $pdo = db();
+    $pdo->beginTransaction();
+    docf_track();
+    try {
+        $r = $fn();
+        $pdo->commit();
+        docf_track();
+        return $r;
+    } catch (PmError $e) {
+        $pdo->rollBack();
+        foreach (docf_track() as $p) docf_unlink($p);
+        fail($e->getMessage());
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        foreach (docf_track() as $p) docf_unlink($p);
+        throw $e;
+    }
+}
+
+$me = null;
+if (in_array($act, array('list', 'get', 'todo_count', 'download', 'file', 'export', 'zip', 'form_opts'), true)) {
+    api_guard(false, false);
+} else {
+    api_guard();
+}
+$me = current_user();
+$admin = is_admin();
+$scopeSql = project_scope_sql('d.project_id');
+
+if ($act === 'todo_count') {
+    json_out(array('ok' => true, 'count' => (int)db_val(
+        'SELECT COUNT(*) FROM pm_docs d JOIN pm_doc_steps s ON s.doc_id = d.id AND s.round = d.round
+         WHERE d.status = ? AND s.status = ? AND s.role_id = ? AND ' . $scopeSql, array(DOC_PENDING, STEP_CURRENT, $me['role_id']))));
+}
+
+if ($act === 'list') {
+    list($limit, $offset) = page_args();
+    list($w, $args) = doc_list_where($me);
+    json_out(array('total' => (int)db_val("SELECT COUNT(*) FROM pm_docs d WHERE $w", $args), 'rows' => doc_list_rows($w, $args, $limit, $offset)));
+}
+
+if ($act === 'export') {
+    // 導出 xls 清單（Excel 可直接打開的 HTML 表格），按當前篩選條件，最多 5000 條
+    list($w, $args) = doc_list_where($me);
+    $rows = doc_list_rows($w, $args, 5000, 0);
+    $cols = array('doc_no' => '文件編號', 'version' => '版本', 'ver_text' => '版本說明', 'type' => '審批類型', 'disc' => '專業分類', 'title' => '文件標題',
+        'project_name' => '所屬工程', 'creator_name' => '提交人', 'status_text' => '狀態', 'cur_role' => '當前審批角色', 'created_at' => '創建時間',
+        'submitted_at' => '提交時間', 'finished_at' => '結束時間', 'file_name' => '附件', 'att_count' => '附件數');
+    header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    header("Content-Disposition: attachment; filename=\"docs.xls\"; filename*=UTF-8''" . rawurlencode('審批文件清單_' . date('YmdHi') . '.xls'));
+    echo "\xEF\xBB\xBF<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><table border=\"1\"><tr>";
+    foreach ($cols as $t) echo '<th>' . h($t) . '</th>';
+    echo '</tr>';
+    foreach ($rows as $r) {
+        $r['type'] = trim($r['type_code'] . ' ' . $r['type_name']);
+        $r['disc'] = trim($r['disc_code'] . ' ' . $r['disc_name']);
+        echo '<tr>';
+        foreach ($cols as $k => $t) echo '<td style="mso-number-format:\'\@\';">' . h((string)$r[$k]) . '</td>';
+        echo '</tr>';
+    }
+    echo '</table></body></html>';
+    exit;
+}
+
+if ($act === 'zip') {
+    // 勾選文件的全部附件（提交附件 + 審批回覆附件）打包下載，每個文件一個文件夾
+    $ids = array_slice(array_values(array_filter(array_map('intval', explode(',', param('ids'))))), 0, 200);
+    $entries = array();
+    if ($ids) {
+        $in = implode(',', $ids);
+        foreach (db_rows("SELECT d.id, d.doc_no, d.file_name, d.file_path FROM pm_docs d WHERE d.id IN ($in) AND $scopeSql ORDER BY d.id") as $d) {
+            $dir = docf_seg($d['doc_no']) . '/';
+            if ($d['file_name'] !== '' && docf_exists($d['file_path'])) $entries[] = array(docf_abs($d['file_path']), $dir . docf_seg($d['file_name'], 200));
+            foreach (db_rows('SELECT role_name, file_name, file_path FROM pm_doc_files WHERE doc_id = ? ORDER BY id', array($d['id'])) as $f) {
+                if (docf_exists($f['file_path'])) $entries[] = array(docf_abs($f['file_path']), $dir . docf_seg($f['role_name']) . '/' . docf_seg($f['file_name'], 200));
+            }
+        }
+    }
+    try {
+        docf_zip_send('審批文件附件_' . date('YmdHi') . '.zip', $entries);
+    } catch (PmError $e) {
+        header('Content-Type: text/html; charset=utf-8');
+        exit('<script>alert(' . json_encode($e->getMessage(), JSON_UNESCAPED_UNICODE) . ');history.back();</script>');
+    }
+}
+
+if ($act === 'file') {
+    // 審批回覆附件下載
+    $f = db_row('SELECT f.file_name, f.file_path, d.project_id FROM pm_doc_files f JOIN pm_docs d ON d.id = f.doc_id WHERE f.id = ?', array(param_int('id')));
+    if (!$f || !can_see_project($f['project_id']) || !docf_exists($f['file_path'])) {
+        http_response_code(404);
+        exit('附件不存在');
+    }
+    $path = docf_abs($f['file_path']);
+    header('Content-Type: application/octet-stream');
+    header('X-Content-Type-Options: nosniff');
+    header('Content-Length: ' . filesize($path));
+    header("Content-Disposition: attachment; filename=\"download\"; filename*=UTF-8''" . rawurlencode($f['file_name']));
+    readfile($path);
+    exit;
 }
 
 if ($act === 'get') {
@@ -180,11 +281,11 @@ if ($act === 'get') {
 if ($act === 'download') {
     $doc = db_row('SELECT project_id, file_name, file_path FROM pm_docs WHERE id = ?', array(param_int('id')));
     if ($doc && !can_see_project($doc['project_id'])) $doc = null;
-    $path = $doc ? UPLOAD_DIR . '/' . $doc['file_path'] : '';
-    if (!$doc || $doc['file_path'] === '' || !preg_match('/^[0-9a-f_]+\.bin$/', $doc['file_path']) || !is_file($path)) {
+    if (!$doc || !docf_exists($doc['file_path'])) {
         http_response_code(404);
         exit('附件不存在');
     }
+    $path = docf_abs($doc['file_path']);
     header('Content-Type: application/octet-stream');
     header('X-Content-Type-Options: nosniff');
     header('Content-Length: ' . filesize($path));
@@ -304,7 +405,12 @@ if ($act === 'approve' || $act === 'reject') {
     $comment = mb_substr(param('comment'), 0, 500);
     $pass = $act === 'approve';
     if (!$pass && $comment === '') fail('退回時請填寫審批意見');
-    doc_tx(function () use ($id, $me, $comment, $pass) {
+    try {
+        $replies = files_collect('files');
+    } catch (PmError $e) {
+        fail($e->getMessage());
+    }
+    doc_tx(function () use ($id, $me, $comment, $pass, $replies) {
         $doc = db_row('SELECT * FROM pm_docs WHERE id = ? FOR UPDATE', array($id));
         if (!$doc || (int)$doc['status'] !== DOC_PENDING) throw new PmError('該文件當前不在審批中');
         if (!can_see_project($doc['project_id'])) throw new PmError('您不屬於該工程，不能審批');
@@ -317,6 +423,17 @@ if ($act === 'approve' || $act === 'reject') {
             'user_name' => $me['real_name'] !== '' ? $me['real_name'] : $me['username'],
             'comment' => $comment !== '' ? $comment : '同意', 'acted_at' => $now,
         ), $step['id']);
+        // 回覆附件：Re.文件編號 文件標題 角色名稱 年月日時分.後綴，存於該文件編號下的審批角色目錄
+        if ($replies) {
+            $dir = docf_dir($doc, $step['role_name']);
+            $stamp = date('YmdHi');
+            foreach ($replies as $f) {
+                $ext = strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
+                $placed = docf_place($f['tmp'], $dir, 'Re.' . $doc['doc_no'] . ' ' . $doc['title'] . ' ' . $step['role_name'] . ' ' . $stamp, $ext, true);
+                db_insert('pm_doc_files', $placed + array('doc_id' => $id, 'round' => $doc['round'], 'step_id' => $step['id'], 'role_name' => $step['role_name'],
+                    'file_size' => $f['size'], 'user_id' => $me['id'], 'created_at' => $now));
+            }
+        }
         if (!$pass) {
             db_update('pm_docs', array('status' => DOC_REJECTED, 'current_step' => 0, 'updated_at' => $now, 'finished_at' => $now), $id);
             return;
@@ -342,11 +459,14 @@ if ($act === 'delete') {
             if ((int)$doc['status'] !== DOC_DRAFT) throw new PmError('只有擬稿狀態的文件可以刪除（文件編號仍保留占用）');
         }
         if ((int)$doc['is_latest'] && (int)$doc['parent_id']) db_update('pm_docs', array('is_latest' => 1), $doc['parent_id']);
+        $files = array_column(db_rows('SELECT file_path FROM pm_doc_files WHERE doc_id = ?', array($id)), 'file_path');
+        $files[] = $doc['file_path'];
+        db_q('DELETE FROM pm_doc_files WHERE doc_id = ?', array($id));
         db_q('DELETE FROM pm_doc_steps WHERE doc_id = ?', array($id));
         db_q('DELETE FROM pm_docs WHERE id = ?', array($id));
-        return $doc['file_path'];
+        return $files;
     });
-    doc_remove_file($file);
+    foreach ($file as $p) doc_remove_file($p);
     ok('刪除成功');
 }
 fail('未知操作');

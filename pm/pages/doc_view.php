@@ -27,6 +27,8 @@ if (!$current) {
         $current[] = $s + array('status' => STEP_WAIT);
     }
 }
+$replyFiles = array();
+foreach (db_rows('SELECT id, step_id, file_name, file_size FROM pm_doc_files WHERE doc_id = ? ORDER BY id', array($doc['id'])) as $f) $replyFiles[(int)$f['step_id']][] = $f;
 $pending = (int)$doc['status'] === DOC_PENDING;
 $canApprove = $pending && $cur && (int)$cur['role_id'] === (int)$user['role_id'];
 $mine = (int)$doc['creator_id'] === (int)$user['id'];
@@ -76,7 +78,7 @@ $statusColor = array(DOC_DRAFT => '#888', DOC_PENDING => '#e68a00', DOC_APPROVED
     <?php if ($steps): ?>
     <h4>審批記錄</h4>
     <table class="pm-detail">
-        <thead><tr><th>輪次</th><th>步驟</th><th>角色</th><th>處理人</th><th>結果</th><th>意見</th><th>處理時間</th></tr></thead>
+        <thead><tr><th>輪次</th><th>步驟</th><th>角色</th><th>處理人</th><th>結果</th><th>意見</th><th>回覆附件</th><th>處理時間</th></tr></thead>
         <tbody>
         <?php foreach ($steps as $s): ?>
         <tr>
@@ -86,6 +88,7 @@ $statusColor = array(DOC_DRAFT => '#888', DOC_PENDING => '#e68a00', DOC_APPROVED
             <td style="text-align:center;"><?php echo h($s['user_name']); ?></td>
             <td style="text-align:center;"><?php echo (int)$s['round'] !== (int)$doc['round'] && (int)$s['status'] <= STEP_CURRENT ? '—' : $stepText[(int)$s['status']]; ?></td>
             <td><?php echo h($s['comment']); ?></td>
+            <td><?php foreach (isset($replyFiles[(int)$s['id']]) ? $replyFiles[(int)$s['id']] : array() as $f): ?><a href="api/doc.php?act=file&id=<?php echo (int)$f['id']; ?>"><?php echo h($f['file_name']); ?></a><br/><?php endforeach; ?></td>
             <td style="text-align:center;"><?php echo h($s['acted_at']); ?></td>
         </tr>
         <?php endforeach; ?>
@@ -96,6 +99,8 @@ $statusColor = array(DOC_DRAFT => '#888', DOC_PENDING => '#e68a00', DOC_APPROVED
     <?php if ($canApprove): ?>
     <h4>我的審批（<?php echo h($user['role_name']); ?>）</h4>
     <textarea id="<?php echo $uid; ?>_comment" rows="3" style="width:98%;box-sizing:border-box;" placeholder="審批意見（退回時必填）" maxlength="500"></textarea>
+    <div style="padding:6px 0 0;">回覆附件：<input type="file" id="<?php echo $uid; ?>_files" multiple="multiple"/>
+        <span class="pm-hint" style="color:#888;">可選多個，通過或退回時一併上傳，自動命名為「Re.文件編號 文件標題 角色名稱 年月日時分」，單個最大 50MB</span></div>
     <div style="text-align:center;padding:6px 0 10px;">
         <a class="btn btn-primary" id="<?php echo $uid; ?>_pass">通 過</a>&nbsp;&nbsp;
         <a class="btn btn-danger" id="<?php echo $uid; ?>_reject">退 回</a>
@@ -115,7 +120,15 @@ $(function(){
         PM.reloadDocs();
     }
     function act(name) {
-        PM.post('api/doc.php?act=' + name, {id: id, comment: $(U + '_comment').val()}, done);
+        var data = {id: id, comment: $(U + '_comment').val()}, inp = $(U + '_files')[0];
+        if ((name === 'approve' || name === 'reject') && inp && inp.files && inp.files.length) {
+            var fd = new FormData();
+            fd.append('id', id);
+            fd.append('comment', data.comment);
+            $.each(inp.files, function(i, f){ fd.append('files[]', f); });
+            data = fd;
+        }
+        PM.post('api/doc.php?act=' + name, data, done);
     }
     $(U + '_pass').click(function(){ PM.confirm('確定審批通過嗎？', function(){ act('approve'); }); });
     $(U + '_reject').click(function(){

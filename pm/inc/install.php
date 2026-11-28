@@ -151,11 +151,14 @@ function pm_schema() {
         "CREATE TABLE IF NOT EXISTS `pm_user_projects` (`user_id` INT UNSIGNED NOT NULL, `project_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`user_id`, `project_id`), KEY `idx_up_project` (`project_id`)) $t",
         // 文件編號流水號：prefix = 工程英文名-審批類型，擬稿即占號
         "CREATE TABLE IF NOT EXISTS `pm_doc_seq` (`prefix` VARCHAR(150) NOT NULL, `last_no` INT NOT NULL DEFAULT 0, PRIMARY KEY (`prefix`)) $t",
+        // ---- 審批回覆附件、附件替換記錄 ----
+        "CREATE TABLE IF NOT EXISTS `pm_doc_files` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `doc_id` INT UNSIGNED NOT NULL DEFAULT 0, `round` INT NOT NULL DEFAULT 0, `step_id` INT UNSIGNED NOT NULL DEFAULT 0, `role_name` VARCHAR(50) NOT NULL DEFAULT '', `file_name` VARCHAR(255) NOT NULL DEFAULT '', `file_path` VARCHAR(500) NOT NULL DEFAULT '', `file_size` INT UNSIGNED NOT NULL DEFAULT 0, `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, `updated_at` DATETIME NULL, PRIMARY KEY (`id`), KEY `idx_df_doc` (`doc_id`), KEY `idx_df_step` (`step_id`)) $t",
+        "CREATE TABLE IF NOT EXISTS `pm_doc_file_logs` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `src` VARCHAR(10) NOT NULL DEFAULT '', `ref_id` INT UNSIGNED NOT NULL DEFAULT 0, `doc_id` INT UNSIGNED NOT NULL DEFAULT 0, `old_name` VARCHAR(255) NOT NULL DEFAULT '', `new_name` VARCHAR(255) NOT NULL DEFAULT '', `upload_name` VARCHAR(255) NOT NULL DEFAULT '', `old_size` INT UNSIGNED NOT NULL DEFAULT 0, `new_size` INT UNSIGNED NOT NULL DEFAULT 0, `backup_path` VARCHAR(500) NOT NULL DEFAULT '', `user_id` INT UNSIGNED NOT NULL DEFAULT 0, `created_at` DATETIME NOT NULL, PRIMARY KEY (`id`), KEY `idx_dfl_ref` (`src`, `ref_id`)) $t",
         "CREATE TABLE IF NOT EXISTS `pm_meta` (`k` VARCHAR(50) NOT NULL, `v` VARCHAR(255) NOT NULL DEFAULT '', PRIMARY KEY (`k`)) $t",
     );
 }
 
-define('PM_SCHEMA_VER', '6');
+define('PM_SCHEMA_VER', '7');
 
 /** 首次訪問建表並寫入初始數據；之後按版本做增量升級 */
 function pm_install_if_needed() {
@@ -205,6 +208,7 @@ function pm_migrate() {
         'is_latest' => 'TINYINT NOT NULL DEFAULT 1', 'cover' => 'MEDIUMTEXT NULL',
     ));
     db()->exec('ALTER TABLE pm_docs MODIFY `doc_no` VARCHAR(160) NOT NULL');
+    db()->exec('ALTER TABLE pm_docs MODIFY `file_path` VARCHAR(500) NOT NULL DEFAULT \'\'');
     if (!db_val("SELECT v FROM pm_meta WHERE k = 'seed6'")) {
         pm_seed_v6();
         db_q("REPLACE INTO pm_meta (k, v) VALUES ('seed6', '1')");

@@ -57,6 +57,7 @@ function pm_menus() {
             $item('積分管理', '30.png', 'sys_credit'),
             $item('消息發布', 'msg.gif', 'notice'),
             $item('論壇版塊', 'xtgg.png', 'forum_board'),
+            $item('附件管理', 'wdgl.gif', 'sys_docfile'),
         );
         if (is_super()) $sys[] = $item('數據庫管理', 'gear.png', 'sys_db');
         $menus[] = array('id' => 'sys', 'title' => '系統管理', 'icon' => 'resource/images/menu/yzsz.png', 'children' => $sys);
@@ -79,7 +80,7 @@ function pm_pages() {
         'sys_role' => array('sys_role', true), 'sys_user' => array('sys_user', true),
         'sys_flow' => array('sys_flow', true), 'sys_db' => array('sys_db', 'super'),
         'sys_credit' => array('sys_credit', true), 'sys_reg' => array('sys_reg', true),
-        'sys_panel' => array('sys_panel', true),
+        'sys_panel' => array('sys_panel', true), 'sys_docfile' => array('sys_docfile', true),
         'user_info' => array('user_info', false), 'user_pw' => array('user_pw', false), 'log_login' => array('log_login', false),
         'office_remind' => array('office_remind', false), 'office_chat' => array('office_chat', false),
         'office_mail' => array('office_mail', false), 'mail_view' => array('mail_view', false),

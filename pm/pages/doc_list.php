@@ -15,6 +15,8 @@ $scope = substr($name, 4);
             </span>
             <span style="white-space:nowrap;"><label style="width:auto;"><input type="checkbox" name="latest" value="1" checked style="margin:0 3px 0 0;vertical-align:middle;"/>只顯示最新版本</label></span>
             <?php endif; ?>
+            <span><label>創建時間：</label><input type="date" name="created_from" style="width:135px;"/> -- <input type="date" name="created_to" style="width:135px;"/></span>
+            <span><label>結束時間：</label><input type="date" name="finished_from" style="width:135px;"/> -- <input type="date" name="finished_to" style="width:135px;"/></span>
         </div>
         <div class="search-toolbar">
             <span style="float:left;">
@@ -31,6 +33,8 @@ $scope = substr($name, 4);
                 <a class="easyui-linkbutton" icon="icon-search" plain="true" id="<?php echo $uid; ?>_view">查看</a>
                 <?php endif; ?>
                 <a class="easyui-linkbutton" icon="icon-print" plain="true" id="<?php echo $uid; ?>_print">打印封面</a>
+                <a class="easyui-linkbutton" icon="icon-save" plain="true" id="<?php echo $uid; ?>_export">導出xls</a>
+                <a class="easyui-linkbutton" icon="icon-redo" plain="true" id="<?php echo $uid; ?>_zip">下載附件</a>
                 <?php if ($scope === 'mine' || ($scope === 'all' && $admin)): ?>
                 <a class="easyui-linkbutton" icon="icon-remove" plain="true" id="<?php echo $uid; ?>_del">刪除</a>
                 <?php endif; ?>
@@ -45,7 +49,9 @@ $(function(){
     var U = '#<?php echo $uid; ?>', dg = U + '_dg';
     PM.grid(dg, {
         url: 'api/doc.php?act=list&scope=<?php echo h($scope); ?>', queryParams: {latest: <?php echo $scope === 'todo' ? 0 : 1; ?>},
+        checkOnSelect: false, selectOnCheck: false,
         columns: [[
+            {field: 'ck', checkbox: true},
             {field: 'doc_no', title: '文件編號', width: 170, align: 'center'},
             {field: 'version', title: '版本', width: 45, align: 'center'},
             {field: 'ver_text', title: '版本說明', width: 70, align: 'center'},
@@ -57,7 +63,10 @@ $(function(){
             {field: 'status', title: '狀態', width: 70, align: 'center', formatter: PM.docStatus},
             {field: 'cur_role', title: '當前審批角色', width: 100, align: 'center'},
             {field: 'file_name', title: '附件', width: 160, formatter: function(v, row){ return v ? '<a href="api/doc.php?act=download&id=' + parseInt(row.id, 10) + '">' + PM.esc(v) + '</a>' : ''; }},
-            {field: 'submitted_at', title: '提交時間', width: 150, align: 'center'}
+            {field: 'att_count', title: '附件數', width: 55, align: 'center'},
+            {field: 'created_at', title: '創建時間', width: 150, align: 'center'},
+            {field: 'submitted_at', title: '提交時間', width: 150, align: 'center'},
+            {field: 'finished_at', title: '結束時間', width: 150, align: 'center'}
         ]],
         onDblClickRow: function(i, row){ PM.viewDoc(row.id); }
     });
@@ -158,6 +167,19 @@ $(function(){
         PM.confirm('確定將「' + r.doc_no + '」升版嗎？將保留原版本記錄，並生成下一版本（擬稿）供修改後重新申報。', function(){
             PM.post('api/doc.php?act=upgrade', {id: r.id}, PM.reloadDocs);
         });
+    });
+    $(U + '_export').click(function(){
+        var q = $.extend({}, $(dg).datagrid('options').queryParams, {act: 'export', scope: '<?php echo h($scope); ?>'});
+        window.location.href = 'api/doc.php?' + $.param(q);
+    });
+    $(U + '_zip').click(function(){
+        var rows = $(dg).datagrid('getChecked');
+        if (!rows.length) { var r = $(dg).datagrid('getSelected'); if (r) rows = [r]; }
+        if (!rows.length) return PM.alert('請先勾選要下載附件的文件');
+        var n = 0;
+        $.each(rows, function(i, r){ n += parseInt(r.att_count, 10) || 0; });
+        if (!n) return PM.alert('所選文件沒有附件');
+        window.location.href = 'api/doc.php?act=zip&ids=' + $.map(rows, function(r){ return parseInt(r.id, 10); }).join(',');
     });
     $(U + '_view').click(function(){ var r = PM.selected(dg); if (r) PM.viewDoc(r.id); });
     $(U + '_del').click(function(){
