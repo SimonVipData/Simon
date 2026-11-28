@@ -57,7 +57,7 @@ $admin = is_admin();
                 <?php if (!$admin): ?>
                 <div style="width:auto;padding:0 6px;" title="積分即可使用本系統的分鐘數，用完後將自動退出">積分：<b style="color:#d93025" id="ft_credit"><?php echo (int)ceil($user['credits'] / 60); ?></b> 分鐘</div>
                 <?php endif; ?>
-                <div style="width:auto;padding:0 6px;"><a href="javascript:void(0)" onclick="PMLang.toggle()" id="pm_lang_btn" title="切換繁體 / 簡體">简体</a></div>
+                <div style="width:auto;padding:0 6px;" id="pm_lang_btn" title="切換系統語言"></div>
                 <div style="width:200px;"><span id="clock"></span></div>
             </div>
         </div>

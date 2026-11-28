@@ -5,6 +5,7 @@ $act = param('act', 'list');
 api_guard(false, $act !== 'list');
 $me = current_user();
 $uid = (int)$me['id'];
+menu_guard('office_vote');
 
 /** 是否仍可投票（未結束且未過截止日期） */
 function vote_open($v) {

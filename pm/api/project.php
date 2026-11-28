@@ -15,6 +15,7 @@ function project_steps($flowIds) {
 }
 
 if ($act === 'list' || $act === 'options') {
+    if ($act === 'list' && is_logged_in()) menu_guard('project');
     api_guard(false, false);
     $w = project_scope_sql('p.id');
     if ($act === 'options') json_out(db_rows("SELECT p.id, p.code, p.name, p.name_en FROM pm_projects p WHERE $w ORDER BY p.id"));

@@ -30,6 +30,8 @@ if ($f) {
             $acc = forum_access($t, $me);
             $allow = $acc['file'];
         }
+    } elseif ($m === 'worklist') {
+        $allow = menu_on('worklist') && (bool)db_val('SELECT 1 FROM pm_worklist WHERE id = ?', array($rid));
     } elseif ($m === 'event') {
         require_once __DIR__ . '/../inc/panel.php';
         $allow = !cal_own_only() || (int)db_val('SELECT user_id FROM pm_events WHERE id = ?', array($rid)) === (int)$me['id'];

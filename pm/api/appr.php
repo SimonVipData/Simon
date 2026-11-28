@@ -7,6 +7,9 @@ api_guard(false, $act !== 'list' && $act !== 'get');
 $me = current_user();
 $uid = (int)$me['id'];
 $types = array('inquiry' => 'XJ', 'expense' => 'FY', 'matter' => 'SX');
+$apprType = param('type');
+if (!isset($types[$apprType]) && param_int('id')) $apprType = (string)db_val('SELECT type FROM pm_apprs WHERE id = ?', array(param_int('id')));
+if (isset($types[$apprType])) menu_guard('appr_' . $apprType);
 
 function appr_log($id, $me, $action, $comment = '') {
     db_insert('pm_appr_logs', array('appr_id' => $id, 'user_id' => $me['id'], 'user_name' => user_label($me), 'action' => $action,

@@ -34,4 +34,5 @@
 <script type="text/javascript" src="resource/js/util.js?v=<?php echo @filemtime(__DIR__ . '/../resource/js/util.js'); ?>"></script>
 <script type="text/javascript" src="resource/js/pm.js?v=<?php echo @filemtime(__DIR__ . '/../resource/js/pm.js'); ?>"></script>
 <script type="text/javascript" charset="utf-8" src="resource/js/pm.holiday.js?v=<?php echo @filemtime(__DIR__ . '/../resource/js/pm.holiday.js'); ?>"></script>
+<?php echo lang_script(); ?>
 <script type="text/javascript" charset="utf-8" src="resource/js/pm.lang.js?v=<?php echo @filemtime(__DIR__ . '/../resource/js/pm.lang.js'); ?>"></script>

@@ -10,6 +10,7 @@ $admin = is_admin();
 $spaces = disk_spaces();
 $space = param('space');
 if (!isset($spaces[$space])) fail('未知的網盤');
+menu_guard('disk_' . $space);
 
 /** 當前用戶在該網盤可見的條件（個人文件只看自己的） */
 function disk_scope($space, $uid, $alias = '') {

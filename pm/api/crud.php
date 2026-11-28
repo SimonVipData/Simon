@@ -7,6 +7,7 @@ $act = param('act', 'list');
 $name = param('m');
 $mod = pm_module($name);
 if (!$mod) fail('模塊不存在', 404);
+if (in_array(menu_key_of_page($name), array('note', 'todo', 'customer', 'material', 'sub', 'labor'), true) && is_logged_in()) menu_guard(menu_key_of_page($name));
 $t = $mod['table'];
 $fields = $mod['fields'];
 $fileFields = isset($mod['files']) ? $mod['files'] : array();

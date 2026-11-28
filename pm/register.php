@@ -122,7 +122,7 @@ function reg_label($k, $mode) {
 <body>
 <div class="login-wrap tall">
     <div class="login-box wide">
-        <div class="login-lang"><a href="javascript:void(0)" onclick="PMLang.toggle()" id="pm_lang_btn">简体</a></div>
+        <div class="login-lang" id="pm_lang_btn"></div>
         <div class="login-title"><?php echo APP_NAME; ?></div>
         <div class="login-sub">用戶注冊</div>
         <?php if (!$set['enabled']): ?>
@@ -214,6 +214,7 @@ function reg_label($k, $mode) {
     if (input.value !== '') check();
 })();
 </script>
+<?php echo lang_script(); ?>
 <script type="text/javascript" charset="utf-8" src="resource/js/pm.lang.js?v=<?php echo @filemtime(__DIR__ . '/resource/js/pm.lang.js'); ?>"></script>
 </body>
 </html>

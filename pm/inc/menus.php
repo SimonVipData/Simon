@@ -26,6 +26,7 @@ function pm_menus() {
         array('id' => 'work', 'title' => '工程實務', 'icon' => 'resource/images/menu/ggpt.png', 'children' => array(
             $item('記事本', 'mail_edit.png', 'note'),
             $item('待辦事項', '24101_s.gif', 'todo'),
+            $item('工作清單', 'Icon_2430308_s.gif', 'worklist'),
             $item('工程日曆', '25008_s.gif', 'work_calendar'),
             $item('客戶管理', 'gstxl.png', 'customer'),
             $item('材料管理', 'bricks.png', 'material'),
@@ -46,6 +47,13 @@ function pm_menus() {
             $item('工程論壇', 'xtgg.png', 'forum'),
         )),
     );
+    if (!$admin) {
+        foreach ($menus as $i => $m) {
+            $menus[$i]['children'] = array_values(array_filter($m['children'], function ($c) { return menu_on($c['page']); }));
+            if (!$menus[$i]['children']) unset($menus[$i]);
+        }
+        $menus = array_values($menus);
+    }
     if ($admin) {
         $sys = array(
             $item('控制面板', 'gear.png', 'sys_panel'),
@@ -85,7 +93,7 @@ function pm_pages() {
         'office_remind' => array('office_remind', false), 'office_chat' => array('office_chat', false),
         'office_mail' => array('office_mail', false), 'mail_view' => array('mail_view', false),
         'office_vote' => array('office_vote', false), 'vote_view' => array('vote_view', false),
-        'work_calendar' => array('work_calendar', false),
+        'work_calendar' => array('work_calendar', false), 'worklist' => array('worklist', false),
         'appr_inquiry' => array('appr_list', false), 'appr_expense' => array('appr_list', false), 'appr_matter' => array('appr_list', false),
         'appr_view' => array('appr_view', false),
         'forum' => array('forum', false), 'forum_thread' => array('forum_thread', false),

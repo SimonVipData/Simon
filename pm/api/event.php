@@ -7,6 +7,7 @@ $act = param('act', 'month');
 api_guard(false, $act !== 'month');
 $me = current_user();
 $uid = (int)$me['id'];
+menu_guard('work_calendar');
 $marks = array('is_star', 'is_node', 'is_material', 'is_person', 'is_plan');
 
 function event_rows($where, $args, $tail = '') {

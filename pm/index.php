@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="login-wrap">
     <div class="login-box">
-        <div class="login-lang"><a href="javascript:void(0)" onclick="PMLang.toggle()" id="pm_lang_btn">简体</a></div>
+        <div class="login-lang" id="pm_lang_btn"></div>
         <div class="login-title"><?php echo APP_NAME; ?></div>
         <div class="login-sub">工程文件協作與審批平臺</div>
         <?php if ($error !== ''): ?><div class="login-error"><?php echo h($error); ?></div><?php endif; ?>
@@ -88,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="login-footer"><?php echo APP_COPYRIGHT; ?></div>
     </div>
 </div>
+<?php echo lang_script(); ?>
 <script type="text/javascript" charset="utf-8" src="resource/js/pm.lang.js?v=<?php echo @filemtime(__DIR__ . '/resource/js/pm.lang.js'); ?>"></script>
 </body>
 </html>

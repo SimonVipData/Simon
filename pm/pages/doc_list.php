@@ -35,7 +35,7 @@ $scope = substr($name, 4);
                 <a class="easyui-linkbutton" icon="icon-print" plain="true" id="<?php echo $uid; ?>_print">打印封面</a>
                 <a class="easyui-linkbutton" icon="icon-save" plain="true" id="<?php echo $uid; ?>_export">導出xls</a>
                 <a class="easyui-linkbutton" icon="icon-redo" plain="true" id="<?php echo $uid; ?>_zip">下載附件</a>
-                <?php if ($scope === 'mine' || ($scope === 'all' && $admin)): ?>
+                <?php if (($scope === 'mine' && doc_can_delete()) || ($scope === 'all' && $admin)): ?>
                 <a class="easyui-linkbutton" icon="icon-remove" plain="true" id="<?php echo $uid; ?>_del">刪除</a>
                 <?php endif; ?>
             </span>

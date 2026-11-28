@@ -7,6 +7,7 @@ $act = param('act', 'list');
 api_guard(false, $act !== 'list' && $act !== 'get');
 $me = current_user();
 $uid = (int)$me['id'];
+menu_guard('forum');
 
 if ($act === 'list') {
     list($limit, $offset) = page_args();

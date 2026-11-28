@@ -8,7 +8,11 @@ var PM = {
         $.ajaxSetup({headers: {'X-CSRF-Token': cfg.csrf}});
         $(document).ajaxError(function (e, xhr) { if (xhr.status === 423) PM.lockShow(); });
         // EasyUI 自帶簡體語言包：繁體模式下覆蓋常用文字
-        if (!window.PMLang || PMLang.lang !== 'sc') {
+        if (window.PMLang && PMLang.lang === 'en') {
+            if ($.messager) { $.messager.defaults.ok = 'OK'; $.messager.defaults.cancel = 'Cancel'; }
+            if ($.fn.pagination) $.extend($.fn.pagination.defaults, {beforePageText: 'Page', afterPageText: 'of {pages}', displayMsg: 'Showing {from} to {to} of {total} records'});
+            if ($.fn.datagrid) $.fn.datagrid.defaults.loadMsg = 'Processing, please wait...';
+        } else if (!window.PMLang || PMLang.lang !== 'sc') {
             if ($.messager) { $.messager.defaults.ok = '確定'; $.messager.defaults.cancel = '取消'; }
             if ($.fn.pagination) $.extend($.fn.pagination.defaults, {beforePageText: '第', afterPageText: '共{pages}頁', displayMsg: '顯示{from}到{to}，共{total}條記錄'});
             if ($.fn.datagrid) $.fn.datagrid.defaults.loadMsg = '正在處理，請稍候...';

@@ -196,6 +196,10 @@ if (in_array($act, array('list', 'get', 'todo_count', 'download', 'file', 'expor
 $me = current_user();
 $admin = is_admin();
 $scopeSql = project_scope_sql('d.project_id');
+$docScope = param('scope');
+if (in_array($act, array('list', 'export'), true) && in_array($docScope, array('mine', 'todo', 'done', 'all'), true)) menu_guard('doc_' . $docScope);
+if (in_array($act, array('save', 'submit', 'upgrade', 'cover_save', 'form_opts'), true)) menu_guard('doc_mine');
+if ($act === 'approve' || $act === 'reject') menu_guard('doc_todo');
 
 if ($act === 'todo_count') {
     json_out(array('ok' => true, 'count' => (int)db_val(
@@ -450,6 +454,7 @@ if ($act === 'approve' || $act === 'reject') {
 }
 
 if ($act === 'delete') {
+    if (!doc_can_delete()) fail('您沒有刪除報審記錄的權限，請聯繫管理員');
     $id = param_int('id');
     $file = doc_tx(function () use ($id, $me, $admin) {
         $doc = db_row('SELECT * FROM pm_docs WHERE id = ? FOR UPDATE', array($id));

@@ -252,3 +252,4 @@ function user_options($excludeId = 0) {
                     WHERE u.status = 1 AND u.id <> ? ORDER BY r.sort, u.id", array((int)$excludeId));
 }
 require_once __DIR__ . '/proj.php';
+require_once __DIR__ . '/panel.php';

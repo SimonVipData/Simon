@@ -7,7 +7,10 @@ var PMLang = (function () {
     var S = '㑔㑇㐹刾㘎㚯㛣㟆㤘㨫㧐擜䀥鿎䌶䌺䌻䌿䌾䍠䎬䙌䜧䞍䦂鿏䥾䦶䦷䯅鲃䲣䲝鳚鳤鹮丢并干乱亘亚伫布占并来仑侣局俣系伣侠伡私伥俩俫仓个们幸伦㑈伟㐽侧侦伪㐷杰伧伞备家佣偬传伛债伤倾偻仅佥侨仆伪侥偾雇价仪俊侬亿侩俭傤傧俦侪尽偿优储俪㑩傩傥俨凶兑儿兖内两册胄幂净冻凛凯别删刭则克刹刬刚剥剐剀创铲划剧刘刽刿剑㓥剂㔉劲动务勋胜劳势勚劢勋励劝匀匦汇匮区协恤却即厍厕历厌厉厣参叁丛咤吴呐吕呙员呗念问启哑启唡㖞唤丧吃乔单哟呛啬唝吗呜唢哔叹喽啯呕啧尝唛哗唠啸叽哓呒啴恶嘘㖊咝哒哝哕嗳哙喷吨当咛吓哜尝噜啮咽呖咙向亸喾严嘤啭嗫嚣冁呓啰苏嘱囱囵国围园圆图团坝垭采执坚垩垴埚尧报场块茔垲埘涂冢坞埙尘堑垫坠堕坛坟垯墙垦坛垱埙压垒圹垆坛坏垄垅坜坝塆壮壶壸寿够梦伙夹奂奥奁夺奖奋姹妆姗奸娱娄妇娅娲妫㛀媪妈袅妪妩娴娴婳妫媭娆婵娇嫱嫒嬷嫔婴婶娘㛤娈孙学孪宫采寝实宁审写宽宠宝将专寻对导尴届尸屃屉屡层屦属冈峰岘岛峡崃昆岗仑峥岽岚岁㟥嵝崭岖嵚崂峤峣峄峃崄嵘岭屿岳岿峦巅岩巯卺帅师帐带帧帏㡎帼帻帜币帮帱干几库厕厢厩厦庼荫厨厮庙厂庑废广廪庐厅弑吊弪张强别弹弥弯录汇彟彦雕彨佛后径从徕复征彻恒耻悦悮怅闷凄恶恼恽恻爱惬悫怆恺忾栗态愠惨惭恸惯悫怄怂虑悭庆㥪戚欲忧惫怜凭愦慭惮愤悯怃宪忆恳应怿懔蒙怼懑㤽恹惩懒怀悬忏惧慑恋戆戋戗戬战戯戏户抛捝挲挟舍扪挨卷扫抡㧏挜挣挂采拣扬换挥搄损摇捣揾抢掴掼搂挚抠抟折掺捞挦撑挠㧑挢掸拨抚扑揿挞挝捡拥掳择击挡㧟担据挤捣拟摈拧搁掷扩撷摆擞撸㧰扰摅撵拢拦撄搀撺携摄攒挛摊搅揽教敚败叙敌数敛毙敩斓斩断于旗既升时晋昼晕晖旸畅暂晔历昙晓向暧旷昽晒书会胧术东拐栅拐查杆栀枧条枭棁弃棋枨枣栋㭎栈栖梾桠㭏杨枫桢业极矩干杩荣榅桤构枪杠梿椠椁椮桨椢椝桩乐枞梁楼标枢㭤样榝㭴桪朴树桦椫桡桥机椭横檩柽档桧槚检樯梼台槟柠槛柜橹榈栉椟橼栎橱槠栌枥橥榇蘖栊榉樱栏榉权椤栾榄棂钦叹欧欤欢岁历归殁残殒殇㱮殚僵殓殡㱩歼杀壳壳毁殴毵牦毡氇气氢氩氲泛泛污决没冲况溯泄汹浃泾涚凉凄泪渌净凌沦渊涞浅涣减沨涡测浑凑浈涌汤沩准沟温浉涢湿沧灭涤荥汇沪滞渗卤浒浐滚满渔溇沤汉涟渍涨溆渐浆颍泼洁沩㴋潜润浔溃滗涠涩浇涝沄涧渑泽滪泶浍淀㳠浊浓㳡湿泞溁蒙浕济涛㳔滥潍滨溅泺滤澛滢渎㲿泻沈浏濒泸沥潇潆潴泷濑弥潋澜沣滠洒漓滩灏㳕湾滦滟滟灾为乌烃无炼炜烟茕焕烦炀㶽煴荧炝热颎炽烨灯炖烧烫焖营灿毁烛烩㶶熏烬焘烁炉烂争为爷尔床墙牍牵荦牦犊牺状狭狈狰犹狲犸呆狱狮奖独狯猃狝狞㺍获猎犷兽獭献猕猡现雕珐珲玮玚琐瑶莹玛玱琏琎玑瑷珰㻅环玙瑸玺璇琼珑璎瓒瓯瓮产产苏宁亩毕画异画当畴叠痉酸疴痖疯疡痪瘗疮疟瘆疭瘘瘘疗痨痫瘅愈疠瘪痴痒疖症疬癞癣瘿瘾痈瘫癫发皂皑疱皲皱杯盗盏尽监盘卢荡真眦众困睁睐眍䁖瞒瞆睑蒙眬瞩矫朱硁硖砗砚埼硕砀砜确码䂵硙砖硵碜碛矶硗䃅硚硷础碍矿砺砾矾砻秘禄祸祯祎祃御禅礼祢祷秃籼税秆䅉棱禀种称谷䅟稣积颖秾穑秽稳获穞窝洼穷窑窎窭窥窜窍窦灶窃竖竞笔笋笕䇲个笺筝节范筑箧筼筿笃筛筚箦篓蓑箪简篑箫筜签帘篮筹䉤箓篯箨籁笼签笾簖篱箩吁粤粽糁粪粮团粝籴粜纟纠纪纣约红纡纥纨纫纹纳纽纾纯纰纼纱纮纸级纷纭纴纺䌷扎细绂绁绅纻绍绀绋绐绌终弦组䌹绊绗结绝绦绔绞络绚给绒绖统丝绛绝绢绑绡绠绨绣绤绥䌼捆经综缍绿绸绻线绶维绹绾纲网绷缀彩纶绺绮绽绰绫绵绲缁紧绯绿绪绬绱缃缄缂线缉缎缔缗缘缌编缓缅纬缑缈练缏缇致缊萦缙缢缒绉缣缊缞缚缜缟缛县绦缝缡缩纵缧䌸纤缦絷缕缥总绩绷缫缪缯织缮缭绕绣缋绳绘系茧缰缳缲缴䍁绎继缤缱䍀颣缬纩续累缠缨才纤缵缆钵䓨坛罂坛罚骂罢罗罴羁芈群羟羡义膻习玩翚翘翙耧耢圣闻联聪声耸聩聂职聍听聋肃胁脉胫唇修脱胀肾胨脶脑肿脚肠腽腘肤䏝胶腻胆脍脓脸脐膑腊胪脏脔臜卧临台与兴举旧馆舱舣舰舻艰艳刍苎兹荆庄茎荚苋华庵烟苌莱万荝莴叶荭荮苇药荤搜莼莳蒀莅苍荪席盖莲苁莼荜卜参蒌蒋葱茑荫荨蒇荞荬芸莸荛蒉荡芜萧蓣蕰荟蓟芗姜蔷荙莶荐萨䓕苧䓓苔荠蓝荩艺药薮䓖蕴苈蔼蔺萚蕲芦苏蕴苹藓蔹茏兰蓠萝蔂处虚虏号亏虬蛱蜕蚬蚀猬虾虱蜗蛳蚂萤䗖蝼螀蛰蝈螨虮蝉蛲虫蛏蚁蚃蝇虿蝎蛴蝾蚝蜡蛎蟏蛊蚕蛮众蔑术同胡卫冲衮袅里补装里制复裈袆裤裢褛亵裥裥袯袄裣裆褴袜摆衬袭襕核见觃规觅视觇觋觍觎亲觊觏觐觑觉览觌观觞觯触讠订讣计讯讧讨讦讱训讪讫托记讹讶讼䜣诀讷讻访设许诉诃诊注证诂诋讵诈诒诏评诐诇诎诅词咏诩询诣试诗诧诟诡诠诘话该详诜诙诖诔诛诓夸志认诳诶诞诱诮语诚诫诬误诰诵诲说说谁课谇诽谊訚调谄谆谈诿请诤诹诼谅论谂谀谍谞谝谥诨谔谛谐谏谕咨讳谙谌讽诸谚谖诺谋谒谓誊诌谎谜谧谑谡谤谦谥讲谢谣谣谟谪谬谫讴谨谩哗证谲讥谮识谯谭谱噪谵毁译议谴护诪誉谫读谉变詟䜩雠谗让谰谶赞谠谳岂竖丰艳猪豮猫䝙贝贞贠负财贡贫货贩贪贯责贮贳赀贰贵贬买贷贶费贴贻贸贺贲赂赁贿赅资贾贼赈赊宾赇赒赉赐赏赔赓贤卖贱赋赕质赍账赌䞐赖赗赚赙购赛赜贽赘赟赠赞赝赡赢赆赃赑赎赝赣赃赪赶赵趋趱迹践逾踊跄跸迹跖蹒踪跷跶趸踌跻跃䟢踯跞踬蹰跹蹑蹿躜躏躯车轧轨军轪轩轫轭软轷轸轱轴轵轺轲轶轼较辂辁辀载轾辄挽辅轻辆辎辉辋辍辊辇辈轮辌辑辏输辐辒辗舆辒毂辖辕辘转辙轿辚轰辔轹轳办辞辫辩农回迳这连周进游运过达违遥逊递远溯适迟迁选遗辽迈还迩边逻逦郏邮郓乡邹邬郧邓郑邻郸邺郐邝酂郦腌酝丑酝蒏糖医酱酦酿衅酾酽释厘钅钆钇钌钊钉钋针钓钐扣钏钒钗钍钕钎䥺钯钫钘钭钥钚钠钝钩钤钣钑钞钮钧钟钙钬钛钪铌铈钶铃钴钹铍钰钸铀钿钾巨钻铊铉铇铋铂钷钳铆铅钺钵钩钲钼钽锫铏铰铒铬铪银铳铜铚铣铨铢铭铫铦衔铑铷铱铟铵铥铕铯铐铞锐销锈锑锉铝锒锌钡铤铗锋铻锊锓铘锄锃锔锇铓铺锐铖锆锂铽锍锯钢锞录锖锫锩铔锥锕锟锤锱铮锛锬锭锜钱锦锚锠锡锢错录锰表铼镎锝锨锪钫钔锴锳炼锅镀锷铡钖锻锽锸锲锘锹锾键锶锗针钟镁锿镅镑镰镕锁镉锤镈镃钨蓥镏铠铩锼镐镇镇镒镋镍镓鿔镌镎镞旋链镆镙镠镝铿锵镗镘镛铲镜镖镂錾镚铧镤镪䥽锈铙铴镣铹镦镡钟镫镢镨䦅锎锏镄镌镰䦃镯镭铁镮铎铛镱铸镬镔鉴鉴镲锧镴铄镳镥镧钥镵镶镊镩锣钻銮凿镢镋长门闩闪闫闬闭开闶闳闰闲闲间闵闸阂阁合阀闺闽阃阆闾阅阅阊阉阎阏阍阈阌阒板暗闱阔阕阑阇阗阘闿阖阙闯关阚阓阐辟阛闼陉陕升阵阴陈陆阳陧队阶陨际随险陦隐陇隶只隽虽双雏杂鸡离难云电沾霡雾霁雳霭叇灵叆靓静靔腼靥巩绱秋鞒缰鞑千鞯韦韧韨韩韪韬鞲韫韵响页顶顷项顺顸须顼颂颀颃预顽颁顿颇领颌颉颐颏头颒颊颋颕颔颈颓频颓颗题额颚颜颙颛颜愿颡颠类颟颢顾颤颥显颦颅颞颧风飐飑飒台刮飓飔飏飖飕飗飘飙飚飞饣饥饤饦饨饪饫饬饭飧饮饴饲饱饰饳饺饸饼糍饷养饵饹饻饽馁饿馂饾余肴馄馃饯馅馆糊糇饧喂馉馇馎饩馏馊馌馍馒馐馑馓馈馔饥饶飨餍馋馕马驭冯驮驰驯驲驳驻驽驹驵驾骀驸驶驼驷骂骈骇骃骆骎骏骋骍骓骔骒骑骐骛骗骙䯄骞骘骝腾驺骚骟骡蓦骜骖骠骢驱骅骕骁骣骄验惊驿骤驴骧骥骦骊骉肮髅脏体髌髋发松胡须鬓斗闹哄阋阄郁鬶魉魇鱼鱽鱾鲀鲁鲂鱿鲄鲅鲆鲌鲉鲏鲇鲐鲍鲋鲊鲒鲘鲞鲕䲟鲖鲔鲛鲑鲜鲓鲪鲝鲧鲠鲩鲤鲨鲬鲻鲯鲭鲞鲷鲴鲱鲵鲲鲳鲸鲮鲰鲶鲺鳀鲫鳊鳈鲗鳂䲠鲽鳇䲡鳅鲾鳄鳆鳃鳁鳒鳑鳋鲥鳏䲢鳎鳐鳍鳁鲢鳌鳓鳘鲦鲣鲹鳗鳛鳔鳉鳙鳕鳖鳟鳝鳜鳞鲟鲼鲎鲙鳣鳡鳢鲿鲚鳠鳄鲈鲡鸟凫鸠凫鸤凤鸣鸢䴓鸩鸨鸦鸰鸵鸳鸲鸮鸱鸪鸯鸭鸸鸹鸻䴕鸿鸽䴔鸺鸼鹀鹃鹆鹁鹈鹅鹄鹉鹌鹏鹐鹎雕鹊鹓鹍䴖鸫鹑鹒鹋鹙鹕鹗鹖鹛鹜䴗鸧莺鹟鹤鹠鹡鹘鹣鹚鹚鹢鹞鸡䴘鹝鹧鹥鸥鸷鹨鸶鹪鹔鹩鹫鹇鹇鹬鹰鹭鸴㶉鹯䴙鹱鹲鸬鹴鹦鹳鹂鸾卤咸鹾碱盐丽麦麸面面曲曲面么么黄黉点党黪霉黡黩黾鼋鼌鼍冬鼹齐斋赍齑齿龀龁龂龅龇龃龆龄出龈啮龊龉龋腭龌龙厐庞䶮龚龛龟䜤鿒';
     var map = null, re = /[\u3400-\u9fff\uf900-\ufaff]/;
     function cookie() { var m = document.cookie.match(/(?:^|; )pm_lang=(\w+)/); return m ? m[1] : 'tc'; }
-    var lang = cookie() === 'sc' ? 'sc' : 'tc';
+    var LANGS = window.PM_LANGS && window.PM_LANGS.length ? window.PM_LANGS : ['tc', 'sc'];
+    var lang = cookie();
+    if (LANGS.indexOf(lang) < 0) lang = LANGS[0];
+    var LNAME = {tc: '\u7e41\u9ad4', sc: '\u7b80\u4f53', en: 'EN'};
     function conv(s) {
         if (!s || !re.test(s)) return s;
         if (!map) { map = {}; for (var i = 0; i < T.length; i++) map[T.charAt(i)] = S.charAt(i); }
@@ -15,31 +18,235 @@ var PMLang = (function () {
         for (var j = 0; j < s.length; j++) { c = s.charAt(j); out += map[c] || c; }
         return out;
     }
+    /* 英文：按整段文字（去除首尾空白、末尾冒號）查表翻譯 */
+    var EN = {
+        '澳門工程管理網站': 'Macau Engineering Management',
+        '工程文件協作與審批平臺': 'Engineering Document Collaboration & Approval Platform',
+        '帳號': 'Account',
+        '密碼': 'Password',
+        '驗證碼': 'Captcha',
+        '登錄': 'Login',
+        '請輸入帳號': 'Enter account',
+        '請輸入密碼': 'Enter password',
+        '請輸入驗證碼': 'Enter captcha',
+        '點擊刷新': 'Click to refresh',
+        '還沒有帳號？': 'No account yet?',
+        '立即注冊': 'Register now',
+        '首頁': 'Home',
+        '導航菜單': 'Navigation',
+        '快速菜單': 'Quick Menu',
+        '當前用戶': 'Current User',
+        '工程文件': 'Project Documents',
+        '個人辦公': 'Personal Office',
+        '工程實務': 'Engineering Practice',
+        '內部審批': 'Internal Approval',
+        '網盤資料': 'Cloud Drive',
+        '工程論壇': 'Engineering Forum',
+        '系統管理': 'System Admin',
+        '個人中心': 'Personal Center',
+        '工程信息': 'Projects',
+        '我的文件': 'My Documents',
+        '待辦審批': 'Pending Approvals',
+        '已辦審批': 'Processed Approvals',
+        '全部文件': 'All Documents',
+        '消息提醒': 'Reminders',
+        '即時溝通': 'Instant Chat',
+        '內部郵件': 'Internal Mail',
+        '投票': 'Voting',
+        '記事本': 'Notepad',
+        '待辦事項': 'To-dos',
+        '工作清單': 'Work List',
+        '工程日曆': 'Project Calendar',
+        '客戶管理': 'Customers',
+        '材料管理': 'Materials',
+        '分包管理': 'Subcontractors',
+        '勞工管理': 'Labor',
+        '詢價審批': 'Inquiry Approval',
+        '費用審批': 'Expense Approval',
+        '事項審批': 'Matter Approval',
+        '個人文件': 'Personal Files',
+        '共享文件': 'Shared Files',
+        '公司文件': 'Company Files',
+        '控制面板': 'Control Panel',
+        '角色管理': 'Roles',
+        '職位管理': 'Positions',
+        '用戶管理': 'Users',
+        '流程模板': 'Flow Templates',
+        '注冊管理': 'Registration',
+        '積分管理': 'Credits',
+        '消息發布': 'Notices',
+        '論壇版塊': 'Forum Boards',
+        '附件管理': 'Attachments',
+        '數據庫管理': 'Database',
+        '個人信息': 'Profile',
+        '修改密碼': 'Change Password',
+        '登錄日志': 'Login Log',
+        '鎖定界面': 'Lock Screen',
+        '鎖定系統界面': 'Lock screen',
+        '安全退出': 'Log Out',
+        '系統已鎖定': 'System Locked',
+        '解鎖': 'Unlock',
+        '顯示密碼': 'Show password',
+        '積分': 'Credits',
+        '分鐘': 'min',
+        '新增': 'Add',
+        '修改': 'Edit',
+        '刪除': 'Delete',
+        '查看': 'View',
+        '刷新': 'Refresh',
+        '查詢': 'Search',
+        '清空': 'Clear',
+        '保存': 'Save',
+        '保存設置': 'Save Settings',
+        '取消': 'Cancel',
+        '關閉': 'Close',
+        '確定': 'OK',
+        '提示': 'Notice',
+        '上傳': 'Upload',
+        '下載': 'Download',
+        '替換': 'Replace',
+        '打印': 'Print',
+        '導出xls': 'Export XLS',
+        '下載附件': 'Download Attachments',
+        '新建文件': 'New Document',
+        '提交審批': 'Submit',
+        '審批': 'Approve',
+        '通過': 'Pass',
+        '退回': 'Return',
+        '駁回升版': 'Revise',
+        '編輯封面': 'Edit Cover',
+        '打印封面': 'Print Cover',
+        '跟進閉合': 'Follow Up & Close',
+        '全部開啟': 'Enable All',
+        '開啟': 'On',
+        '全部': 'All',
+        '全部狀態': 'All statuses',
+        '全部記錄': 'All records',
+        '我創建的': 'Created by me',
+        '我可跟進的': 'I can follow up',
+        '關鍵字': 'Keyword',
+        '狀態': 'Status',
+        '範圍': 'Scope',
+        '創建時間': 'Created',
+        '結束時間': 'Finished',
+        '提交時間': 'Submitted',
+        '閉合時間': 'Closed At',
+        '更新時間': 'Updated',
+        '只顯示最新版本': 'Latest version only',
+        '擬稿': 'Draft',
+        '審批中': 'In Approval',
+        '已通過': 'Approved',
+        '已駁回': 'Rejected',
+        '未閉合': 'Open',
+        '已閉合': 'Closed',
+        '文件編號': 'Doc No.',
+        '版本': 'Ver.',
+        '版本說明': 'Version Note',
+        '審批類型': 'Approval Type',
+        '專業分類': 'Discipline',
+        '文件標題': 'Title',
+        '所屬工程': 'Project',
+        '提交人': 'Submitter',
+        '當前審批角色': 'Current Role',
+        '附件': 'Attachment',
+        '附件數': 'Files',
+        '回覆附件': 'Reply Attachments',
+        '創建人': 'Creator',
+        '分類': 'Category',
+        '工作描述': 'Description',
+        '描述附件': 'Description Files',
+        '跟進人員': 'Followers',
+        '閉合描述': 'Closing Note',
+        '閉合附件': 'Closing Files',
+        '閉合人': 'Closed By',
+        '所有用戶': 'All users',
+        '工作詳情': 'Work Details',
+        '姓名': 'Name',
+        '角色': 'Role',
+        '職位': 'Position',
+        '類別': 'Type',
+        '管理員': 'Administrator',
+        '超級管理員': 'Super Admin',
+        '普通用戶': 'User',
+        '系統開關': 'System Switches',
+        '用戶權限': 'User Permissions',
+        '用戶菜單顯示': 'User Menus',
+        '系統語言': 'System Language',
+        '繁體中文': 'Traditional Chinese',
+        '簡體中文': 'Simplified Chinese',
+        '工程編號': 'Project Code',
+        '工程名稱': 'Project Name',
+        '工程中文名': 'Chinese Name',
+        '工程英文名': 'English Name',
+        '新增工程': 'New Project',
+        '備註': 'Remarks',
+        '說明': 'Notes',
+        '標題': 'Title',
+        '內容': 'Content',
+        '日期': 'Date',
+        '操作': 'Actions',
+        '用戶名': 'Username',
+        '郵箱': 'Email',
+        '電話': 'Phone',
+        '公司名稱': 'Company',
+        '未讀即時消息': 'Unread chats',
+        '個人文件夾': 'Personal folder'
+    };
+    var enMap = null;
+    var EN_RE = [
+        [/^[顯显]示(\d+)到(\d+)[,，]共(\d+)[條条]?[記记][錄录]$/, 'Showing $1 to $2 of $3 records'],
+        [/^共(\d+)[頁页]$/, 'of $1'],
+        [/^第$/, 'Page'],
+        [/^(\d+)\s*分鐘$/, '$1 min'],
+        [/^共\s*(\d+)\s*[條条]$/, '$1 records']
+    ];
+    function en(s) {
+        if (!s || !re.test(s)) return s;
+        if (!enMap) {
+            enMap = {};
+            for (var k in EN) if (EN.hasOwnProperty(k)) { enMap[k] = EN[k]; enMap[conv(k)] = EN[k]; }
+        }
+        var m = /^(\s*)([\s\S]*?)(\s*)$/.exec(s), body = m[2], tail = '';
+        if (/[：:]$/.test(body)) { body = body.slice(0, -1); tail = ': '; }
+        if (enMap.hasOwnProperty(body)) return m[1] + enMap[body] + tail + m[3];
+        for (var i = 0; i < EN_RE.length; i++) if (EN_RE[i][0].test(body)) return m[1] + body.replace(EN_RE[i][0], EN_RE[i][1]) + tail + m[3];
+        return s;
+    }
+    function tr(s) { return lang === 'sc' ? conv(s) : (lang === 'en' ? en(s) : s); }
     var ATTRS = ['title', 'placeholder', 'alt'];
     function walk(node) {
         if (node.nodeType === 3) {
-            var v = conv(node.nodeValue);
+            var v = tr(node.nodeValue);
             if (v !== node.nodeValue) node.nodeValue = v;
             return;
         }
         if (node.nodeType !== 1) return;
         var tag = node.tagName;
-        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA') return;
+        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA' || node.hasAttribute('data-nolang')) return;
         for (var i = 0; i < ATTRS.length; i++) {
             var a = node.getAttribute(ATTRS[i]);
-            if (a) { var b = conv(a); if (b !== a) node.setAttribute(ATTRS[i], b); }
+            if (a) { var b = tr(a); if (b !== a) node.setAttribute(ATTRS[i], b); }
         }
         if (tag === 'INPUT' && /^(button|submit|reset)$/i.test(node.type)) {
-            var bv = conv(node.value);
+            var bv = tr(node.value);
             if (bv !== node.value) node.value = bv;
         }
         for (var c = node.firstChild; c; c = c.nextSibling) walk(c);
     }
     function start() {
         var btn = document.getElementById('pm_lang_btn');
-        if (btn) btn.innerHTML = lang === 'sc' ? '\u7e41\u9ad4' : '\u7b80\u4f53';
-        if (lang !== 'sc') return;
-        document.title = conv(document.title);
+        if (btn) {
+            btn.setAttribute('data-nolang', '1');
+            var html = [];
+            if (LANGS.length > 1) for (var i = 0; i < LANGS.length; i++) {
+                var l = LANGS[i];
+                html.push(l === lang ? '<b>' + LNAME[l] + '</b>' : '<a href="javascript:void(0)" onclick="PMLang.set(\'' + l + '\')">' + LNAME[l] + '</a>');
+            }
+            btn.innerHTML = html.join(' | ');
+        }
+        if (document.documentElement && lang === 'en') document.documentElement.lang = 'en';
+        if (lang === 'tc') return;
+        document.title = tr(document.title);
         walk(document.body);
         if (window.MutationObserver) {
             new MutationObserver(function (list) {
@@ -55,10 +262,15 @@ var PMLang = (function () {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
     return {
         lang: lang,
-        conv: function (s) { return lang === 'sc' ? conv(s) : s; },
-        toggle: function () {
-            document.cookie = 'pm_lang=' + (lang === 'sc' ? 'tc' : 'sc') + '; path=/; max-age=31536000';
+        langs: LANGS,
+        conv: tr,
+        set: function (l) {
+            document.cookie = 'pm_lang=' + l + '; path=/; max-age=31536000';
             window.location.reload();
+        },
+        toggle: function () {
+            var i = LANGS.indexOf(lang);
+            this.set(LANGS[(i + 1) % LANGS.length]);
         }
     };
 })();

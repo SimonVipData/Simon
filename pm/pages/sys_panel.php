@@ -1,18 +1,69 @@
 <?php
 /** 控制面板：系統功能開關 */
-require_once __DIR__ . '/../inc/panel.php';
 $own = panel_get('cal_own_only');
+$radio = function ($k, $on = '開啟', $off = '關閉') {
+    $v = panel_get($k);
+    return '<label class="pm-radio"><input type="radio" name="' . $k . '" value="1"' . ($v ? ' checked="checked"' : '') . '/>' . $on . '</label>'
+        . '<label class="pm-radio"><input type="radio" name="' . $k . '" value="0"' . ($v ? '' : ' checked="checked"') . '/>' . $off . '</label>';
+};
+$menuGroups = array(
+    '工程文件' => array('project', 'doc_mine', 'doc_todo', 'doc_done', 'doc_all'),
+    '個人辦公' => array('office_remind', 'office_chat', 'office_mail', 'office_vote'),
+    '工程實務' => array('note', 'todo', 'worklist', 'work_calendar', 'customer', 'material', 'sub', 'labor'),
+    '內部審批' => array('appr_inquiry', 'appr_expense', 'appr_matter'),
+    '網盤資料' => array('disk_personal', 'disk_share', 'disk_company'),
+    '工程論壇' => array('forum'),
+);
+$menuNames = panel_menu_defs();
 ?>
 <div class="easyui-tabs" fit="true" border="false" id="<?php echo $uid; ?>_tabs">
 <div title="系統開關" style="overflow:auto;">
-<form class="pm-box" id="<?php echo $uid; ?>_form" onsubmit="return false;">
+<form class="pm-box pm-panel-form" onsubmit="return false;">
     <h4>工程日曆</h4>
     <table class="pm-detail" style="max-width:860px;">
-        <tr><th>默認只顯示「自己創建的事件」</th><td>
-            <label class="pm-radio"><input type="radio" name="cal_own_only" value="1"<?php echo $own ? ' checked="checked"' : ''; ?>/>開啟</label>
-            <label class="pm-radio"><input type="radio" name="cal_own_only" value="0"<?php echo $own ? '' : ' checked="checked"'; ?>/>關閉</label>
+        <tr><th>默認只顯示「自己創建的事件」</th><td><?php echo $radio('cal_own_only'); ?>
             <div class="pm-note" style="margin:4px 0 0 0;">開啟：用戶在「工程日曆」只能查看自己創建的事件；關閉：可查看所有用戶創建的事件。管理員始終可查看全部事件。</div></td></tr>
-        <tr><th></th><td><a class="easyui-linkbutton" icon="icon-ok" id="<?php echo $uid; ?>_save">保存設置</a></td></tr>
+        <tr><th></th><td><a class="easyui-linkbutton pm-panel-save" icon="icon-ok">保存設置</a></td></tr>
+    </table>
+</form>
+</div>
+<div title="用戶權限" style="overflow:auto;">
+<form class="pm-box pm-panel-form" onsubmit="return false;">
+    <h4>普通用戶權限</h4>
+    <table class="pm-detail" style="max-width:860px;">
+        <tr><th>普通用戶刪除報審記錄</th><td><?php echo $radio('doc_user_del'); ?>
+            <div class="pm-note" style="margin:4px 0 0 0;">關閉（默認）：普通用戶「我的文件」沒有「刪除」功能，只有 admin、xadmin 可刪除報審記錄；開啟：普通用戶可刪除自己創建的擬稿文件。</div></td></tr>
+        <tr><th></th><td><a class="easyui-linkbutton pm-panel-save" icon="icon-ok">保存設置</a></td></tr>
+    </table>
+</form>
+</div>
+<div title="用戶菜單顯示" style="overflow:auto;">
+<form class="pm-box pm-panel-form" onsubmit="return false;">
+    <h4>普通用戶菜單訪問權限 <span class="pm-note" style="font-weight:normal;margin-left:10px;">關閉後普通用戶看不到對應菜單項，也不能訪問該功能；管理員不受影響。</span></h4>
+    <table class="pm-detail" style="max-width:860px;">
+        <?php foreach ($menuGroups as $g => $pages): ?>
+        <tr><th><?php echo h($g); ?></th><td>
+            <?php foreach ($pages as $pg): $k = 'menu_' . $pg; $v = panel_get($k); ?>
+            <span style="display:inline-block;min-width:200px;margin:2px 0;"><b style="display:inline-block;width:70px;font-weight:normal;"><?php echo h($menuNames[$pg]); ?></b>
+                <label class="pm-radio"><input type="radio" name="<?php echo $k; ?>" value="1"<?php echo $v ? ' checked="checked"' : ''; ?>/>開啟</label>
+                <label class="pm-radio"><input type="radio" name="<?php echo $k; ?>" value="0"<?php echo $v ? '' : ' checked="checked"'; ?>/>關閉</label></span>
+            <?php endforeach; ?>
+        </td></tr>
+        <?php endforeach; ?>
+        <tr><th></th><td><a class="easyui-linkbutton pm-panel-save" icon="icon-ok">保存設置</a>
+            <a class="easyui-linkbutton pm-panel-all" icon="icon-redo" plain="true" data-v="1">全部開啟</a></td></tr>
+    </table>
+</form>
+</div>
+<div title="系統語言" style="overflow:auto;">
+<form class="pm-box pm-panel-form" onsubmit="return false;">
+    <h4>系統語言</h4>
+    <table class="pm-detail" style="max-width:860px;">
+        <?php foreach (panel_lang_defs() as $lk => $lt): ?>
+        <tr><th><?php echo h($lt); ?></th><td><?php echo $radio('lang_' . $lk); ?></td></tr>
+        <?php endforeach; ?>
+        <tr><th></th><td><div class="pm-note" style="margin:0 0 6px 0;">開啟的語言會顯示在登錄頁和系統右上角供用戶切換，至少須開啟一種；英文目前翻譯菜單、按鈕和常用欄目，內容數據保持原文。</div>
+            <a class="easyui-linkbutton pm-panel-save" icon="icon-ok">保存設置</a></td></tr>
     </table>
 </form>
 </div>
@@ -55,6 +106,7 @@ $(function(){
         else if (a === 'del') PM.confirm('確定刪除「' + r.code + ' ' + r.name + '」嗎？', function(){ PM.post('api/dict.php?act=delete&kind=' + k, {id: r.id}, function(){ PM.reload(dg); }); });
         else PM.post('api/dict.php?act=move&kind=' + k, {id: r.id, dir: a}, function(){ $(dg).datagrid('reload'); });
     });
-    $(U + '_save').click(function(){ PM.post('api/panel.php?act=save', $(U + '_form').serialize()); });
+    $(U + '_tabs').on('click', '.pm-panel-save', function(){ PM.post('api/panel.php?act=save', $(this).closest('form').serialize()); });
+    $(U + '_tabs').on('click', '.pm-panel-all', function(){ $(this).closest('form').find('input[type=radio][value=1]').prop('checked', true); });
 });
 </script>

@@ -4,6 +4,7 @@ require_once __DIR__ . '/../inc/config.php';
 $act = param('act', 'users');
 api_guard(false, $act === 'send');
 $me = current_user();
+menu_guard('office_chat');
 $uid = (int)$me['id'];
 
 if ($act === 'users') {
